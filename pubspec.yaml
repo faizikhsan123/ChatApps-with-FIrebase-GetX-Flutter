@@ -1,24 +1,30 @@
 name: chat_apps
-version: 1.0.0+1
-publish_to: none
 description: A new Flutter project.
-environment: 
+publish_to: none
+version: 1.0.0+1
+
+environment:
   sdk: ^3.9.2
 
-dependencies: 
+dependencies:
+  flutter:
+    sdk: flutter
+
   cupertino_icons: ^1.0.8
-  get: 4.7.3
-  firebase_core: 4.4.0
-  google_sign_in: 7.2.0
-  firebase_auth: 6.1.4
-  flutter: 
-    sdk: flutter
+  get: ^4.7.3
+  firebase_core: ^4.4.0
+  firebase_auth: ^6.1.4
+  google_sign_in: ^7.2.0
+  lottie: ^3.3.2
 
-dev_dependencies: 
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
   flutter_lints: ^5.0.0
-  flutter_test: 
-    sdk: flutter
 
-flutter: 
+flutter:
   uses-material-design: true
 
+  assets:
+    - assets/logo/
+    - assets/lottie/
