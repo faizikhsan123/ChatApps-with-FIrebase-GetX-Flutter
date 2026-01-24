@@ -25,7 +25,7 @@ void main() async {
 
         if (snapshot.connectionState == ConnectionState.done) {
           return FutureBuilder(
-            future: Future.delayed(Duration(seconds: 3)),
+            future: Future.delayed(Duration(microseconds: 1)),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
                 return Obx(
@@ -37,7 +37,7 @@ void main() async {
                         ? authC.isAuth.isTrue //kalo suda login dia ke home kalo belum ke login
                               ? Routes.HOME
                               : Routes.LOGIN //ini kalo skipitro bernilai true tetapi dia bblm login langsung ke login
-                        : Routes .INTRODUCTION, //ini kalo skipIntro bernilai false langsung ke introduction
+                        : Routes .CARI, //ini kalo skipIntro bernilai false langsung ke introduction
                     getPages: AppPages.routes,
                   ),
                 );

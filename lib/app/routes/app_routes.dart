@@ -9,7 +9,10 @@ abstract class Routes {
   static const SPLASH_SCREEN = _Paths.SPLASH_SCREEN;
   static const INTRODUCTION = _Paths.INTRODUCTION;
   static const LOGIN = _Paths.LOGIN;
-
+  static const PROFILE = _Paths.PROFILE;
+  static const CHAT = _Paths.CHAT;
+  static const SEARCH = _Paths.SEARCH;
+  static const CARI = _Paths.CARI;
 }
 
 abstract class _Paths {
@@ -20,5 +23,8 @@ abstract class _Paths {
   static const SPLASH_SCREEN = '/splash-screen';
   static const INTRODUCTION = '/introduction';
   static const LOGIN = '/login';
-
+  static const PROFILE = '/profile';
+  static const CHAT = '/chat';
+  static const SEARCH = '/search';
+  static const CARI = '/cari';
 }

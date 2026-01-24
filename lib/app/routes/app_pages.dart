@@ -1,14 +1,17 @@
 import 'package:get/get.dart';
 
+import '../modules/cari/bindings/cari_binding.dart';
+import '../modules/cari/views/cari_view.dart';
+import '../modules/chat/bindings/chat_binding.dart';
+import '../modules/chat/views/chat_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/introduction/bindings/introduction_binding.dart';
-
 import '../modules/introduction/views/introduction_view.dart';
-
 import '../modules/login/bindings/login_binding.dart';
-
 import '../modules/login/views/login_view.dart';
+import '../modules/profile/bindings/profile_binding.dart';
+import '../modules/profile/views/profile_view.dart';
 
 part 'app_routes.dart';
 
@@ -40,6 +43,21 @@ class AppPages {
           binding: LoginBinding(),
         ),
       ],
+    ),
+    GetPage(
+      name: _Paths.PROFILE,
+      page: () => const ProfileView(),
+      binding: ProfileBinding(),
+    ),
+    GetPage(
+      name: _Paths.CHAT,
+      page: () => const ChatView(),
+      binding: ChatBinding(),
+    ),
+    GetPage(
+      name: _Paths.CARI,
+      page: () =>  CariView(),
+      binding: CariBinding(),
     ),
   ];
 }
