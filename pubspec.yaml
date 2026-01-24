@@ -13,6 +13,7 @@ dependencies:
   google_sign_in: ^7.2.0
   lottie: ^3.3.2
   introduction_screen: 4.0.0
+  avatar_glow: 3.0.1
   flutter: 
     sdk: flutter
 
