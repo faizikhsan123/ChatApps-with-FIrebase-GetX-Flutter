@@ -37,7 +37,7 @@ void main() async {
                         ? authC.isAuth.isTrue //kalo suda login dia ke home kalo belum ke login
                               ? Routes.HOME
                               : Routes.LOGIN //ini kalo skipitro bernilai true tetapi dia bblm login langsung ke login
-                        : Routes .PROFILE, //ini kalo skipIntro bernilai false langsung ke introduction
+                        : Routes .UPDATE_STATUS, //ini kalo skipIntro bernilai false langsung ke introduction
                     getPages: AppPages.routes,
                   ),
                 );
