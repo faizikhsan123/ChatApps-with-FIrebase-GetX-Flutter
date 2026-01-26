@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 
 import '../modules/cari/bindings/cari_binding.dart';
 import '../modules/cari/views/cari_view.dart';
+import '../modules/change_profile/bindings/change_profile_binding.dart';
+import '../modules/change_profile/views/change_profile_view.dart';
 import '../modules/chat/bindings/chat_binding.dart';
 import '../modules/chat/views/chat_view.dart';
 import '../modules/home/bindings/home_binding.dart';
@@ -63,8 +65,13 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.UPDATE_STATUS,
-      page: () =>  UpdateStatusView(),
+      page: () => UpdateStatusView(),
       binding: UpdateStatusBinding(),
+    ),
+    GetPage(
+      name: _Paths.CHANGE_PROFILE,
+      page: () => const ChangeProfileView(),
+      binding: ChangeProfileBinding(),
     ),
   ];
 }

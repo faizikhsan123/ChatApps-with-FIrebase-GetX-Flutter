@@ -14,6 +14,7 @@ abstract class Routes {
   static const SEARCH = _Paths.SEARCH;
   static const CARI = _Paths.CARI;
   static const UPDATE_STATUS = _Paths.UPDATE_STATUS;
+  static const CHANGE_PROFILE = _Paths.CHANGE_PROFILE;
 }
 
 abstract class _Paths {
@@ -29,4 +30,5 @@ abstract class _Paths {
   static const SEARCH = '/search';
   static const CARI = '/cari';
   static const UPDATE_STATUS = '/update-status';
+  static const CHANGE_PROFILE = '/change-profile';
 }
