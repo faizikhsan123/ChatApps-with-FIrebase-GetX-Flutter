@@ -14,6 +14,7 @@ dependencies:
   lottie: ^3.3.2
   introduction_screen: 4.0.0
   avatar_glow: 3.0.1
+  emoji_picker_flutter: 4.4.0
   flutter: 
     sdk: flutter
 

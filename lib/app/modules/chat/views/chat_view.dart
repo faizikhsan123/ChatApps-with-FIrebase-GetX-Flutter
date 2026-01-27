@@ -1,3 +1,4 @@
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -11,7 +12,7 @@ class ChatView extends GetView<ChatController> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.amber,
-        leadingWidth: 100, //set lebar leading
+        leadingWidth: 100,
         leading: InkWell(
           borderRadius: BorderRadius.circular(100),
           onTap: () {
@@ -42,13 +43,11 @@ class ChatView extends GetView<ChatController> {
         children: [
           Expanded(
             child: Container(
-              //ini untuk container chat
               width: Get.width,
               height: Get.height,
               color: const Color.fromARGB(255, 101, 93, 72),
               child: ListView(
                 children: [
-                  //pemanggilan extrach widhet items chat yang ada di bawah
                   ItemsChat(isSender: true),
                   ItemsChat(isSender: false),
                 ],
@@ -56,8 +55,6 @@ class ChatView extends GetView<ChatController> {
             ),
           ),
           Container(
-            //ini untuk container keyboard dan tombol kirim
-            margin: EdgeInsets.only(bottom: context.mediaQuery.padding.bottom),
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             width: Get.width,
             height: 100,
@@ -68,10 +65,13 @@ class ChatView extends GetView<ChatController> {
                 Expanded(
                   child: Container(
                     child: TextField(
+                      controller: controller.chatC, //controller untuk textfield
+                      focusNode: controller.focusNode, //focus node untuk mengatur focus pada textfield apakah lagi terbuka atau tidak
                       decoration: InputDecoration(
                         prefixIcon: IconButton(
                           onPressed: () {
-                            //tombol emoji
+                            controller.focusNode.unfocus(); //menghilangkan focus (keyboard)
+                            controller.IsShowEmoji.toggle(); //mengubah nilai isShowEmoji (kebalikannya)
                           },
                           icon: Icon(Icons.emoji_emotions_outlined),
                         ),
@@ -110,6 +110,39 @@ class ChatView extends GetView<ChatController> {
               ],
             ),
           ),
+          Obx(
+            () => controller.IsShowEmoji.isTrue
+                ? Container(
+                    height: 300,
+                    child: EmojiPicker(
+                      onEmojiSelected: (Category? category, Emoji emoji) {
+                        controller.addEmojiToChat(emoji); //jalankan method addEmojiToChat yg punya parameter emoji 
+                      },
+
+                      onBackspacePressed: () {
+                        controller.deleteEmoji(); //jalankan method deleteEmoji
+                      },
+
+                      config: Config(
+                        checkPlatformCompatibility: true,
+                        emojiViewConfig: EmojiViewConfig(
+                          emojiSizeMax: 28, //ukuran emoji
+                          columns: 5, //emoji yang tampil per baris
+                        ),
+                        viewOrderConfig: const ViewOrderConfig(
+                          top: EmojiPickerItem.categoryBar,
+                          middle: EmojiPickerItem.emojiView,
+                          bottom: EmojiPickerItem.searchBar,
+                        ),
+                        skinToneConfig: const SkinToneConfig(),
+                        categoryViewConfig: const CategoryViewConfig(),
+                        bottomActionBarConfig: const BottomActionBarConfig(),
+                        searchViewConfig: const SearchViewConfig(),
+                      ),
+                    ),
+                  )
+                : Container(),
+          ),
         ],
       ),
     );
@@ -117,19 +150,18 @@ class ChatView extends GetView<ChatController> {
 }
 
 class ItemsChat extends StatelessWidget {
-  const ItemsChat({
-    super.key,
-    required this.isSender, //tambahkan paramete isSender yg wajib diisi
-  });
+  const ItemsChat({super.key, required this.isSender});
 
-  final bool isSender; //buat variabel isSender utnuk ngecek apakah dia pengirim atau tidak
+  final bool isSender;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
       child: Column(
-        crossAxisAlignment: isSender? CrossAxisAlignment.end : CrossAxisAlignment .start, //jika dia  pengirim maka alignment kanan dan sebaliknya (jam nya)
+        crossAxisAlignment: isSender
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           Container(
             padding: EdgeInsets.all(15),
@@ -154,7 +186,7 @@ class ItemsChat extends StatelessWidget {
           Text("12/02/2022"),
         ],
       ),
-      alignment: isSender ? Alignment.centerRight: Alignment.centerLeft, //jika dia pengirim maka alignment kanan dan sebaliknya
+      alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
     );
   }
 }
