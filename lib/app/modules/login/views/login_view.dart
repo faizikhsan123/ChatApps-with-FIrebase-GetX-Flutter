@@ -1,9 +1,13 @@
+import 'package:chat_apps/app/controllers/auth_c_controller.dart';
+
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 
 import '../controllers/login_controller.dart';
+
+final authC = Get.find<AuthCController>();
 
 class LoginView extends GetView<LoginController> {
   @override
@@ -26,7 +30,10 @@ class LoginView extends GetView<LoginController> {
               width: Get.width * 0.8,
               height: Get.height * 0.05,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  authC.login(); //jalankan functioin login yg ada di auth_c_controller
+                  
+                },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

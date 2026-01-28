@@ -9,7 +9,9 @@ class UpdateStatusView extends GetView<UpdateStatusController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back_ios)),
+        leading: IconButton(onPressed: () {
+          Get.back(); //akan mengembalikan ke halaman sebelumnya
+        }, icon: Icon(Icons.arrow_back_ios)),
         backgroundColor: Colors.amber,
         title: const Text('UpdateStatusView'),
         centerTitle: true,
@@ -20,15 +22,16 @@ class UpdateStatusView extends GetView<UpdateStatusController> {
           child: Column(
             children: [
               TextField(
+                controller: controller.statusC, //controller
                 cursorColor: Colors.black,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
-                    //mengatur border
+    
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(color: Colors.amber, width: 2),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    //mengatur border ketika di klik
+        
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(color: Colors.amber, width: 2),
                   ),

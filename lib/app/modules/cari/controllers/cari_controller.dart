@@ -1,23 +1,20 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class CariController extends GetxController {
-  //TODO: Implement CariController
+ late TextEditingController searC;
 
-  final count = 0.obs;
-  @override
+ @override
   void onInit() {
+    searC = TextEditingController();
+    // TODO: implement onInit
     super.onInit();
   }
 
   @override
-  void onReady() {
-    super.onReady();
+  void dispose() {
+    // TODO: implement dispose
+    searC.dispose();
+    super.dispose();
   }
-
-  @override
-  void onClose() {
-    super.onClose();
-  }
-
-  void increment() => count.value++;
 }

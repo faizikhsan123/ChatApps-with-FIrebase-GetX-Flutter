@@ -50,19 +50,15 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.PROFILE,
-      page: () => const ProfileView(),
+      page: () =>  ProfileView(),
       binding: ProfileBinding(),
     ),
     GetPage(
       name: _Paths.CHAT,
-      page: () => const ChatView(),
+      page: () =>  ChatView(),
       binding: ChatBinding(),
     ),
-    GetPage(
-      name: _Paths.CARI,
-      page: () => CariView(),
-      binding: CariBinding(),
-    ),
+    GetPage(name: _Paths.CARI, page: () => CariView(), binding: CariBinding()),
     GetPage(
       name: _Paths.UPDATE_STATUS,
       page: () => UpdateStatusView(),
@@ -70,7 +66,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.CHANGE_PROFILE,
-      page: () => const ChangeProfileView(),
+      page: () =>  ChangeProfileView(),
       binding: ChangeProfileBinding(),
     ),
   ];

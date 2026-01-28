@@ -1,23 +1,19 @@
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 class UpdateStatusController extends GetxController {
-  //TODO: Implement UpdateStatusController
-
-  final count = 0.obs;
+ late TextEditingController statusC;
   @override
   void onInit() {
+    statusC = TextEditingController();
+    // TODO: implement onInit
     super.onInit();
   }
 
   @override
-  void onReady() {
-    super.onReady();
-  }
-
-  @override
   void onClose() {
+    statusC.dispose();
+    // TODO: implement onClose
     super.onClose();
   }
-
-  void increment() => count.value++;
 }

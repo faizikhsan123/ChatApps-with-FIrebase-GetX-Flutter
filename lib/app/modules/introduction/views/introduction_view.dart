@@ -79,7 +79,7 @@ class IntroductionView extends GetView<IntroductionController> {
           onSkip: () {
             // On Skip button
             introKey.currentState?.animateScroll(
-              3,
+              4,
             ); //langsung ke halaman ketiga
           },
 

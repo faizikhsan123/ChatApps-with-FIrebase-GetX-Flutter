@@ -11,7 +11,9 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back_ios)),
+        leading: IconButton(onPressed: () {
+          Get.back(); //akan mengembalikan ke halaman sebelumnya
+        }, icon: Icon(Icons.arrow_back_ios)),
         backgroundColor: Colors.amber,
         title: const Text('changeProfile'),
         centerTitle: true,
@@ -25,27 +27,27 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
           child: Column(
             children: [
                 Padding(
-              //container untuk foto dan nama
+      
               padding: const EdgeInsets.all(20),
               child: Container(
                 width: Get.height * 0.2,
                 height: Get.height * 0.2,
                 child: AvatarGlow(
-                  //avat glow untuk efek glow
-                  startDelay: Duration(milliseconds: 1000), //durasi glow
+          
+                  startDelay: Duration(milliseconds: 1000), 
                   glowColor: const Color.fromARGB(
                     255,
                     167,
                     162,
                     146,
-                  ), //warna glow
-                  glowShape: BoxShape.circle, //shape glow
+                  ), 
+                  glowShape: BoxShape.circle, 
                   child: Material(
                     elevation: 8,
                     shape:
-                        CircleBorder(), //shape ngubah bentuk jadi bentuk lingkaran
+                        CircleBorder(),
                     child: CircleAvatar(
-                      //circle avatar untuk bentuk lingkaran
+                    
                       backgroundImage: NetworkImage(
                         "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YXZhdGFyfGVufDB8fDB8fA%3D%3D&w=1000&q=80",
                       ),
@@ -59,7 +61,7 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
 
               TextField(  //email
                 cursorColor: Colors.black,
-                controller: controller.emailC, //mengambil nilai dari controller
+                controller: controller.emailC, 
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -74,7 +76,7 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
               ),
               SizedBox(height: 20),
               TextField( //name
-                controller: controller.nameC, //mengambil nilai dari controller
+                controller: controller.nameC, 
                 cursorColor: Colors.black,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
@@ -88,10 +90,10 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
                   labelText: 'name',
                 ),
               ),
-              SizedBox(height: 20), //status
+              SizedBox(height: 20),
               TextField(
                 controller:
-                    controller.statusC, //mengambil nilai dari controller
+                    controller.statusC, 
                 cursorColor: Colors.black,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
