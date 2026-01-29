@@ -11,6 +11,7 @@ final authC = Get.find<AuthCController>();
 
 class LoginView extends GetView<LoginController> {
   @override
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(193, 70, 116, 186),
@@ -22,7 +23,6 @@ class LoginView extends GetView<LoginController> {
             Center(
               child: Container(
                 height: Get.height * 0.5,
-
                 child: Lottie.asset('assets/lottie/login.json'),
               ),
             ),

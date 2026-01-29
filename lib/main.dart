@@ -25,7 +25,7 @@ void main() async {
 
         if (snapshot.connectionState == ConnectionState.done) {
           return FutureBuilder(
-            future: Future.delayed(Duration(seconds: 1)),
+            future: Future.delayed(Duration(seconds: 3)),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
                 return Obx(
