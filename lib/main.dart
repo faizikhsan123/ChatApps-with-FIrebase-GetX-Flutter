@@ -6,15 +6,16 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 import 'app/routes/app_pages.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init(); //import get_storage
   await Firebase.initializeApp();
 
-  final authC = Get.put( AuthCController(),permanent: true,
-  ); //import auth_c_controller di set permanent karena akan digunakan di seluruh aplikasi
+  final authC = Get.put(AuthCController(), permanent: true);
   runApp(
     FutureBuilder(
       future: Firebase.initializeApp(),
@@ -29,20 +30,20 @@ void main() async {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
                 return Obx(
-                  //karena ada data yg di pantau (obs) maka kita pake obx
                   () => GetMaterialApp(
                     debugShowCheckedModeBanner: false,
                     title: "Chat Apps",
-                    initialRoute: authC.skipIntro.isTrue //kalo skipIntro bernilai true trs di cek lagi sama yg dibawah
-                        ? authC.isAuth.isTrue //kalo suda login dia ke home kalo belum ke login
+                    initialRoute: authC.skipIntro.isTrue
+                        ? authC.isAuth.isTrue
                               ? Routes.HOME
-                              : Routes.LOGIN //ini kalo skipitro bernilai true tetapi dia bblm login langsung ke login
-                        : Routes .INTRODUCTION, //ini kalo skipIntro bernilai false langsung ke introduction
+                              : Routes.LOGIN
+                        : Routes.INTRODUCTION,
                     getPages: AppPages.routes,
                   ),
                 );
               }
-              return Splashscreen();
+              return FutureBuilder(future: authC.firstinitializeApp(), //jadi function firstinitializeApp akan selalu dijalankan setelah 3 detik (splashscreen)
+              builder: (context, snapshot) => Splashscreen(),);
             },
           );
         }
