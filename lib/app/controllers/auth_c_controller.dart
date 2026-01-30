@@ -14,26 +14,22 @@ class AuthCController extends GetxController {
 
   UserCredential? userCredential;
 
-  Future<void> firstinitializeApp() async { //function pertama kali dijalankan
-    await autoLogin().then((value) { //jalankan gunction auto login 
-      if (value) { // bernilai true
-        isAuth.value = true; //ganti nilai var isAuth menjadi true
+  Future<void> firstinitializeApp() async {
+    await autoLogin().then((value) {
+      if (value) {
+        isAuth.value = true;
       }
-    },
-    );
-    await skipIntroo().then((value) { //jalankan function skip introo
-      if (value) { // bernilai true
-        skipIntro.value = true; //ganti nilai var skipIntro menjadi true
+    });
+    await skipIntroo().then((value) {
+      if (value) {
+        skipIntro.value = true;
       }
-    },
-
-    );
+    });
   }
 
-  Future<bool> autoLogin() async {  //function auto login bertipe bool jika perna login maka  bernilai true
-  
+  Future<bool> autoLogin() async {
     try {
-      final isSignedIn = await _googleSignIn.isSignedIn(); //jika dia sudah pernah login maka bernilai true
+      final isSignedIn = await _googleSignIn.isSignedIn();
       if (isSignedIn) {
         return true;
       } else {
@@ -44,18 +40,16 @@ class AuthCController extends GetxController {
     }
   }
 
-
-  Future<bool> skipIntroo() async { //functuion skip introo bertipe bool jika perna login maka  bernilai true
+  Future<bool> skipIntroo() async {
     try {
-      final box = GetStorage(); //membuat box
-      if (box.read('skip') != null || box.read('skip') == true) { //membaca key skip dan jika bernilai true kembalikan true
+      final box = GetStorage();
+      if (box.read('skip') != null || box.read('skip') == true) {
         return true;
       } else {
         return false;
       }
     } catch (e) {
       return false;
-      
     }
   }
 
@@ -78,21 +72,24 @@ class AuthCController extends GetxController {
           accessToken: gooleAuth.accessToken,
         );
 
-        await FirebaseAuth.instance .signInWithCredential(credential).then((value) => userCredential = value);
+        await FirebaseAuth.instance
+            .signInWithCredential(credential)
+            .then((value) => userCredential = value);
 
         print(userCredential);
 
-        //jika sudah login maka buat box dengan nama skip dan bernilai true
+
+        //simpan data ke firestore database
+        
+
         final box = GetStorage();
-        if (box.read('skip') != null || box.read('skip') == true) { //membaca key skip dan jika bernilai true maka haus terlebih dahulu key skip
-          box.remove('skip');          
+        if (box.read('skip') != null || box.read('skip') == true) {
+          box.remove('skip');
         }
-        box.write('skip', true); //jika sda dihapus maka buat baru  key skip bernilai true
+        box.write('skip', true);
 
-        isAuth.value = true; //ganti nilai var isAuth menjadi true
-        Get.offAllNamed(Routes.HOME); //pindah ke halaman home
-
-      
+        isAuth.value = true;
+        Get.offAllNamed(Routes.HOME);
       } else {
         print("gagal login");
       }
