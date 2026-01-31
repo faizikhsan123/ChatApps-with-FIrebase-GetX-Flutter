@@ -1,4 +1,5 @@
 import 'package:avatar_glow/avatar_glow.dart';
+import 'package:chat_apps/app/controllers/auth_c_controller.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -6,7 +7,8 @@ import 'package:get/get.dart';
 import '../controllers/change_profile_controller.dart';
 
 class ChangeProfileView extends GetView<ChangeProfileController> {
-  const ChangeProfileView({Key? key}) : super(key: key);
+
+  final authC = Get.find<AuthCController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(

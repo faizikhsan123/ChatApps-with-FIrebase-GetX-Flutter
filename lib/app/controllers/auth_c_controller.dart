@@ -1,3 +1,4 @@
+import 'package:chat_apps/app/data/models/user_model_model.dart';
 import 'package:chat_apps/app/routes/app_pages.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,9 +16,10 @@ class AuthCController extends GetxController {
 
   UserCredential? userCredential;
 
-  FirebaseFirestore firestore = FirebaseFirestore.instance; //inisialize firestore
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  
+  UserModel? user =
+      UserModel(); //untuk menampung data user berbentuk model (awal kosong)
 
   Future<void> firstinitializeApp() async {
     await autoLogin().then((value) {
@@ -36,6 +38,42 @@ class AuthCController extends GetxController {
     try {
       final isSignedIn = await _googleSignIn.isSignedIn();
       if (isSignedIn) {
+        //signInSilently untuk otomatis login jika sudah login (ngecek tanpa interaksi)
+        //jadi kode dibawah intinya memastikan jika dia auto login otomatis dia juga sudah puynya data dari models user
+        await _googleSignIn.signInSilently().then((value) => _currentUser = value,);
+
+        final gooleAuth = await _currentUser!.authentication;
+
+        final credential = GoogleAuthProvider.credential(
+          idToken: gooleAuth.idToken,
+          accessToken: gooleAuth.accessToken,
+        );
+
+        await FirebaseAuth.instance.signInWithCredential(credential).then((value) => userCredential = value);
+
+        CollectionReference users = firestore.collection("users");
+
+        users.doc(_currentUser!.email).update({
+          'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!
+              .toIso8601String(),
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+
+        final userTerkini = await users.doc(_currentUser!.email).get();
+
+        final dataUserTerkini = userTerkini.data() as Map<String, dynamic>;
+
+        user = UserModel(
+          uid: dataUserTerkini['uid'],
+          name: dataUserTerkini['name'],
+          email: dataUserTerkini['email'],
+          status: dataUserTerkini['status'],
+          createdAt: dataUserTerkini['createdAt'],
+          updatedAt: dataUserTerkini['updatedAt'],
+          photoUrl: dataUserTerkini['photoUrl'],
+          lastSignIn: dataUserTerkini['lastSignIn'],
+        );
+
         return true;
       } else {
         return false;
@@ -77,36 +115,58 @@ class AuthCController extends GetxController {
           accessToken: gooleAuth.accessToken,
         );
 
-        await FirebaseAuth.instance
-            .signInWithCredential(credential)
-            .then((value) => userCredential = value);
+        await FirebaseAuth.instance.signInWithCredential(credential).then((value) => userCredential = value);
 
         print(userCredential);
 
-        //simpan data login ke firestore database
-      CollectionReference users = firestore.collection("users"); //var users diambil / membuat  collection users
+        CollectionReference users = firestore.collection("users");
 
-      //menambahkan data ke firestore
-      users.doc(_currentUser!.email)  //membuat id di firestoree nya dari email current user
-      .set({ // set (set ini bagian data / field) diambil dari current user dan user credential
-        'uid': userCredential!.user!.uid,
-        'name': _currentUser!.displayName,
-        'email': _currentUser!.email,
-        'photoUrl': _currentUser!.photoUrl,
-        'status': "",
-        'createdAt': userCredential!.user!.metadata!.creationTime!.toIso8601String(), //karena waktu bukan string kita convert ke string dengan toIso8601String
-        'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
-        'updatedAt': DateTime.now().toIso8601String()
-      });
+        //penambahan logic untuk cek user
+        final chekuser = await users.doc(_currentUser!.email).get(); //ambil data user
 
+        if (chekuser.exists) {
+          //jika user ada maka update field tertentu saja dengan data terbaru
+          users.doc(_currentUser!.email).update({
+            'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
+            'updatedAt': DateTime.now().toIso8601String(),
+          });
+        } else {
+          //jika user tidak ada maka tambahkan user baru
+          users.doc(_currentUser!.email).set({
+            'uid': userCredential!.user!.uid,
+            'name': _currentUser!.displayName,
+            'email': _currentUser!.email,
+            'photoUrl': _currentUser!.photoUrl,
+            'status': "",
+            'createdAt': userCredential!.user!.metadata!.creationTime!.toIso8601String(),
+            'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
+            'updatedAt': DateTime.now().toIso8601String(),
+          });
+        }
 
+        //ambil docs berdasarkan email
+        final userTerkini = await users.doc(_currentUser!.email).get();
+
+        //ambil datanya dari docs (email) dan dibuat ke bentuk mapping
+        final dataUserTerkini = userTerkini.data() as Map<String, dynamic>;
+
+        //isi nilai user dengan data user terkini(firebase) ke bentuk model
+        user = UserModel(
+          uid: dataUserTerkini['uid'],
+          name: dataUserTerkini['name'],
+          email: dataUserTerkini['email'],
+          status: dataUserTerkini['status'],
+          createdAt: dataUserTerkini['createdAt'],
+          updatedAt: dataUserTerkini['updatedAt'],
+          photoUrl: dataUserTerkini['photoUrl'],
+          lastSignIn: dataUserTerkini['lastSignIn'],
+        );
 
         final box = GetStorage();
         if (box.read('skip') != null || box.read('skip') == true) {
           box.remove('skip');
         }
         box.write('skip', true);
-
         isAuth.value = true;
         Get.offAllNamed(Routes.HOME);
       } else {
