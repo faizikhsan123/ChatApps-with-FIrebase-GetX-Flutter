@@ -1,4 +1,5 @@
 import 'package:chat_apps/app/routes/app_pages.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -13,6 +14,10 @@ class AuthCController extends GetxController {
   GoogleSignInAccount? _currentUser;
 
   UserCredential? userCredential;
+
+  FirebaseFirestore firestore = FirebaseFirestore.instance; //inisialize firestore
+
+  
 
   Future<void> firstinitializeApp() async {
     await autoLogin().then((value) {
@@ -78,9 +83,23 @@ class AuthCController extends GetxController {
 
         print(userCredential);
 
+        //simpan data login ke firestore database
+      CollectionReference users = firestore.collection("users"); //var users diambil / membuat  collection users
 
-        //simpan data ke firestore database
-        
+      //menambahkan data ke firestore
+      users.doc(_currentUser!.email)  //membuat id di firestoree nya dari email current user
+      .set({ // set (set ini bagian data / field) diambil dari current user dan user credential
+        'uid': userCredential!.user!.uid,
+        'name': _currentUser!.displayName,
+        'email': _currentUser!.email,
+        'photoUrl': _currentUser!.photoUrl,
+        'status': "",
+        'createdAt': userCredential!.user!.metadata!.creationTime!.toIso8601String(), //karena waktu bukan string kita convert ke string dengan toIso8601String
+        'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
+        'updatedAt': DateTime.now().toIso8601String()
+      });
+
+
 
         final box = GetStorage();
         if (box.read('skip') != null || box.read('skip') == true) {
