@@ -8,27 +8,6 @@ import '../controllers/cari_controller.dart';
 
 class CariView extends GetView<CariController> {
   Widget build(BuildContext context) {
-    final List<Widget> friends = List.generate(
-      20,
-      (index) => ListTile(
-        leading: CircleAvatar(),
-        title: Text(
-          "Orang ke ${index + 1}",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text(
-          "orang ke ${index + 1} @gmail.com",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-
-        trailing: GestureDetector(
-          onTap: () {
-            Get.toNamed(Routes.CHAT);
-          },
-          child: Chip(label: Text("message")),
-        ),
-      ),
-    );
     return Scaffold(
       appBar: PreferredSize(
         child: AppBar(
@@ -44,6 +23,7 @@ class CariView extends GetView<CariController> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
+                onChanged: (value) => controller.searchUser(value,), //menangkap data yang diketik pada textfield
                 controller: controller.searC, //controllernya
                 cursorColor: Colors.amber,
                 decoration: InputDecoration(
@@ -70,20 +50,46 @@ class CariView extends GetView<CariController> {
         ),
         preferredSize: Size.fromHeight(140),
       ),
-      body: Expanded(
-        child: friends.length == 0
-            ? Center(
-                child: Container(
-                  width: Get.width * 0.8,
-                  height: Get.height * 0.8,
-                  child: Lottie.asset('assets/lottie/kosong.json'),
+      body: Obx(
+        () => Expanded(
+          child:
+              controller.tempSearch.length == 0 //jika data yg diketik user masih kosong
+              ? Center(
+                  child: Container(
+                    width: Get.width * 0.8,
+                    height: Get.height * 0.8,
+                    child: Lottie.asset('assets/lottie/kosong.json'),
+                  ),
+                )
+              : ListView.builder( //jika data yg diketik user tidak kosong
+                  itemCount: controller.tempSearch.length, //jumlah data sebanyak data pada tempSearch (data yg diketik user)
+                  itemBuilder: (context, index) => ListTile(
+                    leading: CircleAvatar(),
+                    title: Text(
+                      "${controller.tempSearch[index]['name']}", //tampilkan data dari tempSearch berdasarkan index hanya name
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(
+                      "${controller.tempSearch[index]['email']}", //tampilkan data dari tempSearch berdasarkan index hanya email
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+
+                    trailing: GestureDetector(
+                      onTap: () {
+                        Get.toNamed(Routes.CHAT);
+                      },
+                      child: Chip(label: Text("message")),
+                    ),
+                  ),
+                  padding: EdgeInsets.zero,
                 ),
-              )
-            : ListView.builder(
-                itemCount: friends.length,
-                itemBuilder: (context, index) => friends[index],
-                padding: EdgeInsets.zero,
-              ),
+        ),
       ),
     );
   }
