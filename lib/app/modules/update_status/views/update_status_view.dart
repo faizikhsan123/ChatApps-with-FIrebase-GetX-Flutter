@@ -1,3 +1,4 @@
+import 'package:chat_apps/app/controllers/auth_c_controller.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -5,12 +6,16 @@ import 'package:get/get.dart';
 import '../controllers/update_status_controller.dart';
 
 class UpdateStatusView extends GetView<UpdateStatusController> {
+
+  final authC = Get.find<AuthCController>();
   @override
   Widget build(BuildContext context) {
+    controller.statusC.text = authC.user!.value.status!; //nilai controller statusC diisi dengan status user
+    
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(onPressed: () {
-          Get.back(); //akan mengembalikan ke halaman sebelumnya
+          Get.back(); 
         }, icon: Icon(Icons.arrow_back_ios)),
         backgroundColor: Colors.amber,
         title: const Text('UpdateStatusView'),
@@ -22,7 +27,7 @@ class UpdateStatusView extends GetView<UpdateStatusController> {
           child: Column(
             children: [
               TextField(
-                controller: controller.statusC, //controller
+                controller: controller.statusC, //ngambil data dari controller
                 cursorColor: Colors.black,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
@@ -42,7 +47,9 @@ class UpdateStatusView extends GetView<UpdateStatusController> {
               Container(
                 width: Get.width,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    authC.changeStatus(controller.statusC.text); //jalankan function changeStatus
+                  },
                   child: Text(
                     'Update',
                     style: TextStyle(

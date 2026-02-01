@@ -7,20 +7,33 @@ import 'package:get/get.dart';
 import '../controllers/change_profile_controller.dart';
 
 class ChangeProfileView extends GetView<ChangeProfileController> {
-
   final authC = Get.find<AuthCController>();
   @override
   Widget build(BuildContext context) {
+    //jadi controller ini isinya data user yang sedang login
+    controller.emailC.text = authC.user!.value.email!;
+    controller.nameC.text = authC.user!.value.name!;
+    controller.statusC.text = authC.user!.value.status!;
+
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: () {
-          Get.back(); //akan mengembalikan ke halaman sebelumnya
-        }, icon: Icon(Icons.arrow_back_ios)),
+        leading: IconButton(
+          onPressed: () {
+            Get.back();
+          },
+          icon: Icon(Icons.arrow_back_ios),
+        ),
         backgroundColor: Colors.amber,
         title: const Text('changeProfile'),
         centerTitle: true,
         actions: [
-          IconButton(onPressed: (){}, icon: Icon(Icons.save_alt_rounded,color: Colors.white,))
+          IconButton(
+            onPressed: () {
+              authC.changeProfile(
+                  controller.nameC.text, controller.statusC.text);
+            },
+            icon: Icon(Icons.save_alt_rounded, color: Colors.white),
+          ),
         ],
       ),
       body: Padding(
@@ -28,42 +41,33 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
         child: Center(
           child: Column(
             children: [
-                Padding(
-      
-              padding: const EdgeInsets.all(20),
-              child: Container(
-                width: Get.height * 0.2,
-                height: Get.height * 0.2,
-                child: AvatarGlow(
-          
-                  startDelay: Duration(milliseconds: 1000), 
-                  glowColor: const Color.fromARGB(
-                    255,
-                    167,
-                    162,
-                    146,
-                  ), 
-                  glowShape: BoxShape.circle, 
-                  child: Material(
-                    elevation: 8,
-                    shape:
-                        CircleBorder(),
-                    child: CircleAvatar(
-                    
-                      backgroundImage: NetworkImage(
-                        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YXZhdGFyfGVufDB8fDB8fA%3D%3D&w=1000&q=80",
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Container(
+                  width: Get.height * 0.2,
+                  height: Get.height * 0.2,
+                  child: AvatarGlow(
+                    startDelay: Duration(milliseconds: 1000),
+                    glowColor: const Color.fromARGB(255, 167, 162, 146),
+                    glowShape: BoxShape.circle,
+                    child: Material(
+                      elevation: 8,
+                      shape: CircleBorder(),
+                      child: CircleAvatar(
+                        backgroundImage: NetworkImage(
+                          "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YXZhdGFyfGVufDB8fDB8fA%3D%3D&w=1000&q=80",
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 10),
+              SizedBox(height: 10),
 
-
-              TextField(  //email
+              TextField(
                 cursorColor: Colors.black,
-                controller: controller.emailC, 
+                controller: controller.emailC,
+                readOnly: true, //tidak bisa di edit
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -74,12 +78,14 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
                     borderSide: BorderSide(color: Colors.amber, width: 2),
                   ),
                   labelText: 'Email',
+                  
                 ),
               ),
               SizedBox(height: 20),
-              TextField( //name
-                controller: controller.nameC, 
+              TextField(
+                controller: controller.nameC,
                 cursorColor: Colors.black,
+                textInputAction: TextInputAction.next,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -94,9 +100,9 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
               ),
               SizedBox(height: 20),
               TextField(
-                controller:
-                    controller.statusC, 
+                controller: controller.statusC,
                 cursorColor: Colors.black,
+                textInputAction: TextInputAction.done,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -121,7 +127,12 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
               Container(
                 width: Get.width,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    authC.changeProfile(
+                      controller.nameC.text,
+                      controller.statusC.text,
+                    ); //jalankan function change profile dan kirimkan data email dan status
+                  },
                   child: Text(
                     'Update',
                     style: TextStyle(

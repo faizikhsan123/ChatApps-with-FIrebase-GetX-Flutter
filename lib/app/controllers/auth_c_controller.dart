@@ -18,8 +18,7 @@ class AuthCController extends GetxController {
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  UserModel? user =
-      UserModel(); //untuk menampung data user berbentuk model (awal kosong)
+ var user = UserModel().obs; //modelnya sekarang dibuat obs
 
   Future<void> firstinitializeApp() async {
     await autoLogin().then((value) {
@@ -38,8 +37,8 @@ class AuthCController extends GetxController {
     try {
       final isSignedIn = await _googleSignIn.isSignedIn();
       if (isSignedIn) {
-        //signInSilently untuk otomatis login jika sudah login (ngecek tanpa interaksi)
-        //jadi kode dibawah intinya memastikan jika dia auto login otomatis dia juga sudah puynya data dari models user
+        
+        
         await _googleSignIn.signInSilently().then((value) => _currentUser = value,);
 
         final gooleAuth = await _currentUser!.authentication;
@@ -63,7 +62,9 @@ class AuthCController extends GetxController {
 
         final dataUserTerkini = userTerkini.data() as Map<String, dynamic>;
 
-        user = UserModel(
+       
+
+        user (UserModel( //sekarang replace (timpa ulang) modelnya seperti ini. karena kita buat modelnya observable
           uid: dataUserTerkini['uid'],
           name: dataUserTerkini['name'],
           email: dataUserTerkini['email'],
@@ -72,7 +73,7 @@ class AuthCController extends GetxController {
           updatedAt: dataUserTerkini['updatedAt'],
           photoUrl: dataUserTerkini['photoUrl'],
           lastSignIn: dataUserTerkini['lastSignIn'],
-        );
+        ));
 
         return true;
       } else {
@@ -121,17 +122,17 @@ class AuthCController extends GetxController {
 
         CollectionReference users = firestore.collection("users");
 
-        //penambahan logic untuk cek user
-        final chekuser = await users.doc(_currentUser!.email).get(); //ambil data user
+        
+        final chekuser = await users.doc(_currentUser!.email).get(); 
 
         if (chekuser.exists) {
-          //jika user ada maka update field tertentu saja dengan data terbaru
+          
           users.doc(_currentUser!.email).update({
             'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
             'updatedAt': DateTime.now().toIso8601String(),
           });
         } else {
-          //jika user tidak ada maka tambahkan user baru
+          
           users.doc(_currentUser!.email).set({
             'uid': userCredential!.user!.uid,
             'name': _currentUser!.displayName,
@@ -144,14 +145,14 @@ class AuthCController extends GetxController {
           });
         }
 
-        //ambil docs berdasarkan email
+        
         final userTerkini = await users.doc(_currentUser!.email).get();
 
-        //ambil datanya dari docs (email) dan dibuat ke bentuk mapping
+        
         final dataUserTerkini = userTerkini.data() as Map<String, dynamic>;
 
-        //isi nilai user dengan data user terkini(firebase) ke bentuk model
-        user = UserModel(
+        
+        user (UserModel( //sekarang replace (timpa ulang) modelnya seperti ini. karena kita buat modelnya observable
           uid: dataUserTerkini['uid'],
           name: dataUserTerkini['name'],
           email: dataUserTerkini['email'],
@@ -160,7 +161,7 @@ class AuthCController extends GetxController {
           updatedAt: dataUserTerkini['updatedAt'],
           photoUrl: dataUserTerkini['photoUrl'],
           lastSignIn: dataUserTerkini['lastSignIn'],
-        );
+        ));
 
         final box = GetStorage();
         if (box.read('skip') != null || box.read('skip') == true) {
@@ -180,5 +181,68 @@ class AuthCController extends GetxController {
   void logout() async {
     await _googleSignIn.signOut();
     Get.offAllNamed(Routes.LOGIN);
+  }
+
+
+
+  //function untuk update profile
+  void changeProfile(String name, String status) {
+    CollectionReference users = firestore.collection("users"); //masuk ke collection users
+
+    String date = DateTime.now().toIso8601String(); //deklarasi tangal
+
+    users.doc(_currentUser!.email).update({ //lalu  masuk ke docs nya (email user) dan update datanya dengan parameter yg dikirim
+      'name' : name,
+      'status' : status,
+      'updatedAt': date,
+      'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
+    });
+
+    //update modelnya juga dengan cara ini
+   user.update((val) {
+     val!.name = name;
+     val!.status = status;
+     val!.updatedAt = date;
+     val!.lastSignIn = userCredential!.user!.metadata!.lastSignInTime!.toIso8601String();
+
+   },);
+    user.refresh(); //lalu refresh datanya
+    Get.defaultDialog(
+      title: "Success",
+      middleText: "Update profile success",
+      onConfirm: () {
+        Get.back();
+        Get.back();
+      } 
+    );
+  }
+
+  void changeStatus (String status) {
+    CollectionReference users = firestore.collection("users"); //masuk ke collection users
+
+    String date = DateTime.now().toIso8601String(); //deklarasi tangal
+
+    users.doc(_currentUser!.email).update({ //lalu  masuk ke docs nya (email user) dan update datanya dengan parameter yg dikirim
+      'status' : status,
+      'updatedAt': date,
+      'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
+    });
+
+    user.update((val) {
+      val!.status = status;
+      val!.updatedAt = date;
+      val!.lastSignIn = userCredential!.user!.metadata!.lastSignInTime!.toIso8601String();
+    },);
+
+    user.refresh();
+
+    Get.defaultDialog(
+      title: "Success",
+      middleText: "Update status success",
+      onConfirm: () {
+        Get.back();
+        Get.back();
+      }
+    );
   }
 }

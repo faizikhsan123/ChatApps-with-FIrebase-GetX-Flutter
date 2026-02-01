@@ -44,18 +44,22 @@ class ProfileView extends GetView<ProfileController> {
                     margin: EdgeInsets.all(15),
                     width: 200,
                     height: 200,
-                    child: authC.user?.photoUrl == null //jika image null tampilkan gambar default
+                    child:
+                        authC.user?.value.photoUrl ==
+                            null //jika image null tampilkan gambar default
                         ? Image.asset(
                             "assets/logo/profile.png",
                             fit: BoxFit.cover,
                           )
-                        : Image.network( //jika tidak null tampilkan gambar dari firebase
-                            "${authC.user?.photoUrl}",
+                        : Image.network(
+                            //jika tidak null tampilkan gambar dari firebase
+                            "${authC.user?.value.photoUrl}",
                             fit: BoxFit.cover,
                           ),
                     decoration: BoxDecoration(
                       color: Colors.black38,
                       borderRadius: BorderRadius.circular(100),
+
                       image: DecorationImage(
                         image: AssetImage("assets/logo/profile.png"),
                         fit: BoxFit.cover,
@@ -67,11 +71,13 @@ class ProfileView extends GetView<ProfileController> {
             ),
             SizedBox(height: 10),
 
-            Text(
-              "${authC.user?.name}", //ngambil data dari model
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Obx(
+              () => Text(
+                "${authC.user?.value.name}", //ngambil data dari model karena modelnya uda obx kita harus tambah .value
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
             ),
-            Text("Lorem Ipsum @ gmail.com", style: TextStyle(fontSize: 15)),
+            Text("${authC.user?.value.email}", style: TextStyle(fontSize: 15)), //kenapa email tidak di obx karena emailnya tidak bisa di update
 
             SizedBox(height: 30),
 
