@@ -1,4 +1,3 @@
-
 import 'package:chat_apps/app/data/models/test_user_model.dart';
 import 'package:chat_apps/app/routes/app_pages.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,7 +18,7 @@ class AuthCController extends GetxController {
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
- var user = TestUser().obs; //ganti modelsnya
+  var user = TestUser().obs; 
 
   Future<void> firstinitializeApp() async {
     await autoLogin().then((value) {
@@ -38,9 +37,9 @@ class AuthCController extends GetxController {
     try {
       final isSignedIn = await _googleSignIn.isSignedIn();
       if (isSignedIn) {
-        
-        
-        await _googleSignIn.signInSilently().then((value) => _currentUser = value,);
+        await _googleSignIn.signInSilently().then(
+          (value) => _currentUser = value,
+        );
 
         final gooleAuth = await _currentUser!.authentication;
 
@@ -49,11 +48,13 @@ class AuthCController extends GetxController {
           accessToken: gooleAuth.accessToken,
         );
 
-        await FirebaseAuth.instance.signInWithCredential(credential).then((value) => userCredential = value);
+        await FirebaseAuth.instance
+            .signInWithCredential(credential)
+            .then((value) => userCredential = value);
 
         CollectionReference users = firestore.collection("users");
 
-        users.doc(_currentUser!.email).update({
+      await  users.doc(_currentUser!.email).update({ //tambahkan await di sini
           'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!
               .toIso8601String(),
           'updatedAt': DateTime.now().toIso8601String(),
@@ -63,20 +64,7 @@ class AuthCController extends GetxController {
 
         final dataUserTerkini = userTerkini.data() as Map<String, dynamic>;
 
-       
-
-        user (TestUser(  //ganti modelsnya
-          uid: dataUserTerkini['uid'],
-          name: dataUserTerkini['name'],
-          email: dataUserTerkini['email'],
-          status: dataUserTerkini['status'],
-          createdAt: dataUserTerkini['createdAt'],
-          updatedAt: dataUserTerkini['updatedAt'],
-          photoUrl: dataUserTerkini['photoUrl'],
-          lastSignIn: dataUserTerkini['lastSignIn'],
-          keyName: dataUserTerkini['KeyName'], //tmabahkan keyname
-        ));
-
+       user(TestUser.fromJson(dataUserTerkini)); //from json itu dia butuh mapping data mappingnnya dari yg dataUserTerkini
         return true;
       } else {
         return false;
@@ -118,54 +106,49 @@ class AuthCController extends GetxController {
           accessToken: gooleAuth.accessToken,
         );
 
-        await FirebaseAuth.instance.signInWithCredential(credential).then((value) => userCredential = value);
+        await FirebaseAuth.instance
+            .signInWithCredential(credential)
+            .then((value) => userCredential = value);
 
         print(userCredential);
 
         CollectionReference users = firestore.collection("users");
 
-        
-        final chekuser = await users.doc(_currentUser!.email).get(); 
+        final chekuser = await users.doc(_currentUser!.email).get();
 
         if (chekuser.exists) {
-          
-          users.doc(_currentUser!.email).update({
-            'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
+        await users.doc(_currentUser!.email).update({ //tambahkawan await agar proses berjalan terlebih dahulu
+            'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!
+                .toIso8601String(),
             'updatedAt': DateTime.now().toIso8601String(),
           });
         } else {
-          
-          users.doc(_currentUser!.email).set({
+        await  users.doc(_currentUser!.email).set({ //tambahkawan await agar proses berjalan terlebih dahulu
             'uid': userCredential!.user!.uid,
             'name': _currentUser!.displayName,
             'email': _currentUser!.email,
             'photoUrl': _currentUser!.photoUrl,
             'status': "",
-            'createdAt': userCredential!.user!.metadata!.creationTime!.toIso8601String(),
-            'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
+            'createdAt': userCredential!.user!.metadata!.creationTime!
+                .toIso8601String(),
+            'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!
+                .toIso8601String(),
             'updatedAt': DateTime.now().toIso8601String(),
-            'KeyName': _currentUser!.displayName!.substring(0, 1).toUpperCase(), //untuk ambil keyname
+            'KeyName': _currentUser!.displayName!
+                .substring(0, 1)
+                .toUpperCase(), 
+            'chats': [], //tambahkan chats
           });
         }
 
-        
         final userTerkini = await users.doc(_currentUser!.email).get();
 
-        
         final dataUserTerkini = userTerkini.data() as Map<String, dynamic>;
 
-        
-        user (TestUser( //ganti modelsnya
-          uid: dataUserTerkini['uid'],
-          name: dataUserTerkini['name'],
-          email: dataUserTerkini['email'],
-          status: dataUserTerkini['status'],
-          createdAt: dataUserTerkini['createdAt'],
-          updatedAt: dataUserTerkini['updatedAt'],
-          photoUrl: dataUserTerkini['photoUrl'],
-          lastSignIn: dataUserTerkini['lastSignIn'],
-          keyName: dataUserTerkini['KeyName'], //tambahkan keyname
-        ));
+
+       user(TestUser.fromJson(dataUserTerkini)); //from json itu dia butuh mapping data mappingnnya dari yg dataUserTerkini
+
+       
 
         final box = GetStorage();
         if (box.read('skip') != null || box.read('skip') == true) {
@@ -187,56 +170,61 @@ class AuthCController extends GetxController {
     Get.offAllNamed(Routes.LOGIN);
   }
 
-  
   void changeProfile(String name, String status) {
-    CollectionReference users = firestore.collection("users"); 
+    CollectionReference users = firestore.collection("users");
 
-    String date = DateTime.now().toIso8601String(); 
+    String date = DateTime.now().toIso8601String();
 
-    users.doc(_currentUser!.email).update({ 
-      'name' : name,
-      'KeyName' : name.substring(0, 1).toUpperCase(), //nama berubah Keyname juga berubah
-      'status' : status,
+    users.doc(_currentUser!.email).update({
+      'name': name,
+      'KeyName': name
+          .substring(0, 1)
+          .toUpperCase(), 
+      'status': status,
       'updatedAt': date,
-      'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
+      'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!
+          .toIso8601String(),
     });
 
-    
-   user.update((val) {
-     val!.name = name;
-     val!.keyName = name.substring(0, 1).toUpperCase(); //update keyname nya juga
-     val!.status = status;
-     val!.updatedAt = date;
-     val!.lastSignIn = userCredential!.user!.metadata!.lastSignInTime!.toIso8601String();
-
-   },);
-    user.refresh(); 
+    user.update((val) {
+      val!.name = name;
+      val!.keyName = name
+          .substring(0, 1)
+          .toUpperCase(); 
+      val!.status = status;
+      val!.updatedAt = date;
+      val!.lastSignIn = userCredential!.user!.metadata!.lastSignInTime!
+          .toIso8601String();
+    });
+    user.refresh();
     Get.defaultDialog(
       title: "Success",
       middleText: "Update profile success",
       onConfirm: () {
         Get.back();
         Get.back();
-      } 
+      },
     );
   }
 
-  void changeStatus (String status) {
-    CollectionReference users = firestore.collection("users"); 
+  void changeStatus(String status) {
+    CollectionReference users = firestore.collection("users");
 
-    String date = DateTime.now().toIso8601String(); 
+    String date = DateTime.now().toIso8601String();
 
-    users.doc(_currentUser!.email).update({ 
-      'status' : status,
+    users.doc(_currentUser!.email).update({
+      'status': status,
       'updatedAt': date,
-      'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
+      'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!
+          .toIso8601String(),
     });
 
     user.update((val) {
       val!.status = status;
       val!.updatedAt = date;
-      val!.lastSignIn = userCredential!.user!.metadata!.lastSignInTime!.toIso8601String();
-    },);
+      val!.lastSignIn = userCredential!.user!.metadata!.lastSignInTime!
+          .toIso8601String();
+    });
 
     user.refresh();
 
@@ -246,7 +234,7 @@ class AuthCController extends GetxController {
       onConfirm: () {
         Get.back();
         Get.back();
-      }
+      },
     );
   }
 }

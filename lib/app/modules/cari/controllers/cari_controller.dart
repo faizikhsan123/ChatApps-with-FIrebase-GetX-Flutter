@@ -10,7 +10,7 @@ class CariController extends GetxController {
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  void searchUser(String data) async {
+  void searchUser(String data,String email) async { //tambahkan parameter email
     if (data.length == 0) {
       queryresult.value = [];
       tempSearch.value = [];
@@ -21,7 +21,8 @@ class CariController extends GetxController {
             "users", //ganti ke collectio nusers
           );
           final keyNameResult = await users
-              .where('KeyName', isEqualTo: data.substring(0, 1).toUpperCase())
+              .where('KeyName', isEqualTo: data.substring(0, 1).toUpperCase()) //ambil huruf pertama dari data yang diinput dan diubah menjadi huruf besar
+              .where('email', isNotEqualTo: email) //dan bukan akun email itu sendiri (jadi pas searcch nama yg login tidak muncul)
               .get();
 
           print(
@@ -52,7 +53,7 @@ class CariController extends GetxController {
                 ) {
               tempSearch.add(element); //tambahkan element ke tempSearch
 
-              print( " temp : ${tempSearch}");
+              print(" temp : ${tempSearch}");
             }
           });
         }

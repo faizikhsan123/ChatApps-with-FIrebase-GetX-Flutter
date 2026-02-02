@@ -1,3 +1,4 @@
+import 'package:chat_apps/app/controllers/auth_c_controller.dart';
 import 'package:chat_apps/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +8,7 @@ import 'package:lottie/lottie.dart';
 import '../controllers/cari_controller.dart';
 
 class CariView extends GetView<CariController> {
+  final authC = Get.find<AuthCController>(); //import auth controller
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
@@ -23,7 +25,10 @@ class CariView extends GetView<CariController> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
-                onChanged: (value) => controller.searchUser(value,), //menangkap data yang diketik pada textfield
+                onChanged: (value) => controller.searchUser(
+                  value,
+                  authC.user!.value.email!, //menangkap data yang diketik pada textfield dan menangkap email user yang sekarang login
+                ), 
                 controller: controller.searC, //controllernya
                 cursorColor: Colors.amber,
                 decoration: InputDecoration(
@@ -50,48 +55,47 @@ class CariView extends GetView<CariController> {
         ),
         preferredSize: Size.fromHeight(140),
       ),
-    body: Obx(
-  () => controller.tempSearch.isEmpty
-      ? Center(
-          child: SizedBox(
-            width: Get.width * 0.8,
-            height: Get.height * 0.8,
-            child: Lottie.asset('assets/lottie/kosong.json'),
-          ),
-        )
-      : ListView.builder(
-          padding: EdgeInsets.zero,
-          itemCount: controller.tempSearch.length,
-          itemBuilder: (context, index) {
-            final user = controller.tempSearch[index];
+      body: Obx(
+        () => controller.tempSearch.isEmpty
+            ? Center(
+                child: SizedBox(
+                  width: Get.width * 0.8,
+                  height: Get.height * 0.8,
+                  child: Lottie.asset('assets/lottie/kosong.json'),
+                ),
+              )
+            : ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: controller.tempSearch.length,
+                itemBuilder: (context, index) {
+                  final user = controller.tempSearch[index];
 
-            return ListTile(
-              leading: CircleAvatar(),
-              title: Text(
-                user['name'],
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: Text(
-                user['email'],
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              trailing: GestureDetector(
-                onTap: () {
-                  Get.toNamed(Routes.CHAT);
+                  return ListTile(
+                    leading: CircleAvatar(),
+                    title: Text(
+                      user['name'],
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(
+                      user['email'],
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    trailing: GestureDetector(
+                      onTap: () {
+                        Get.toNamed(Routes.CHAT);
+                      },
+                      child: const Chip(label: Text("message")),
+                    ),
+                  );
                 },
-                child: const Chip(label: Text("message")),
               ),
-            );
-          },
-        ),
-),
-
+      ),
     );
   }
 }
