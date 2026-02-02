@@ -50,47 +50,48 @@ class CariView extends GetView<CariController> {
         ),
         preferredSize: Size.fromHeight(140),
       ),
-      body: Obx(
-        () => Expanded(
-          child:
-              controller.tempSearch.length == 0 //jika data yg diketik user masih kosong
-              ? Center(
-                  child: Container(
-                    width: Get.width * 0.8,
-                    height: Get.height * 0.8,
-                    child: Lottie.asset('assets/lottie/kosong.json'),
-                  ),
-                )
-              : ListView.builder( //jika data yg diketik user tidak kosong
-                  itemCount: controller.tempSearch.length, //jumlah data sebanyak data pada tempSearch (data yg diketik user)
-                  itemBuilder: (context, index) => ListTile(
-                    leading: CircleAvatar(),
-                    title: Text(
-                      "${controller.tempSearch[index]['name']}", //tampilkan data dari tempSearch berdasarkan index hanya name
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    subtitle: Text(
-                      "${controller.tempSearch[index]['email']}", //tampilkan data dari tempSearch berdasarkan index hanya email
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+    body: Obx(
+  () => controller.tempSearch.isEmpty
+      ? Center(
+          child: SizedBox(
+            width: Get.width * 0.8,
+            height: Get.height * 0.8,
+            child: Lottie.asset('assets/lottie/kosong.json'),
+          ),
+        )
+      : ListView.builder(
+          padding: EdgeInsets.zero,
+          itemCount: controller.tempSearch.length,
+          itemBuilder: (context, index) {
+            final user = controller.tempSearch[index];
 
-                    trailing: GestureDetector(
-                      onTap: () {
-                        Get.toNamed(Routes.CHAT);
-                      },
-                      child: Chip(label: Text("message")),
-                    ),
-                  ),
-                  padding: EdgeInsets.zero,
+            return ListTile(
+              leading: CircleAvatar(),
+              title: Text(
+                user['name'],
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
                 ),
+              ),
+              subtitle: Text(
+                user['email'],
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              trailing: GestureDetector(
+                onTap: () {
+                  Get.toNamed(Routes.CHAT);
+                },
+                child: const Chip(label: Text("message")),
+              ),
+            );
+          },
         ),
-      ),
+),
+
     );
   }
 }

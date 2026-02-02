@@ -1,4 +1,5 @@
-import 'package:chat_apps/app/data/models/user_model_model.dart';
+
+import 'package:chat_apps/app/data/models/test_user_model.dart';
 import 'package:chat_apps/app/routes/app_pages.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,7 +19,7 @@ class AuthCController extends GetxController {
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
- var user = UserModel().obs; //modelnya sekarang dibuat obs
+ var user = TestUser().obs; //ganti modelsnya
 
   Future<void> firstinitializeApp() async {
     await autoLogin().then((value) {
@@ -64,7 +65,7 @@ class AuthCController extends GetxController {
 
        
 
-        user (UserModel( //sekarang replace (timpa ulang) modelnya seperti ini. karena kita buat modelnya observable
+        user (TestUser(  //ganti modelsnya
           uid: dataUserTerkini['uid'],
           name: dataUserTerkini['name'],
           email: dataUserTerkini['email'],
@@ -73,6 +74,7 @@ class AuthCController extends GetxController {
           updatedAt: dataUserTerkini['updatedAt'],
           photoUrl: dataUserTerkini['photoUrl'],
           lastSignIn: dataUserTerkini['lastSignIn'],
+          keyName: dataUserTerkini['KeyName'], //tmabahkan keyname
         ));
 
         return true;
@@ -142,6 +144,7 @@ class AuthCController extends GetxController {
             'createdAt': userCredential!.user!.metadata!.creationTime!.toIso8601String(),
             'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
             'updatedAt': DateTime.now().toIso8601String(),
+            'KeyName': _currentUser!.displayName!.substring(0, 1).toUpperCase(), //untuk ambil keyname
           });
         }
 
@@ -152,7 +155,7 @@ class AuthCController extends GetxController {
         final dataUserTerkini = userTerkini.data() as Map<String, dynamic>;
 
         
-        user (UserModel( //sekarang replace (timpa ulang) modelnya seperti ini. karena kita buat modelnya observable
+        user (TestUser( //ganti modelsnya
           uid: dataUserTerkini['uid'],
           name: dataUserTerkini['name'],
           email: dataUserTerkini['email'],
@@ -161,6 +164,7 @@ class AuthCController extends GetxController {
           updatedAt: dataUserTerkini['updatedAt'],
           photoUrl: dataUserTerkini['photoUrl'],
           lastSignIn: dataUserTerkini['lastSignIn'],
+          keyName: dataUserTerkini['KeyName'], //tambahkan keyname
         ));
 
         final box = GetStorage();
@@ -183,30 +187,30 @@ class AuthCController extends GetxController {
     Get.offAllNamed(Routes.LOGIN);
   }
 
-
-
-  //function untuk update profile
+  
   void changeProfile(String name, String status) {
-    CollectionReference users = firestore.collection("users"); //masuk ke collection users
+    CollectionReference users = firestore.collection("users"); 
 
-    String date = DateTime.now().toIso8601String(); //deklarasi tangal
+    String date = DateTime.now().toIso8601String(); 
 
-    users.doc(_currentUser!.email).update({ //lalu  masuk ke docs nya (email user) dan update datanya dengan parameter yg dikirim
+    users.doc(_currentUser!.email).update({ 
       'name' : name,
+      'KeyName' : name.substring(0, 1).toUpperCase(), //nama berubah Keyname juga berubah
       'status' : status,
       'updatedAt': date,
       'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
     });
 
-    //update modelnya juga dengan cara ini
+    
    user.update((val) {
      val!.name = name;
+     val!.keyName = name.substring(0, 1).toUpperCase(); //update keyname nya juga
      val!.status = status;
      val!.updatedAt = date;
      val!.lastSignIn = userCredential!.user!.metadata!.lastSignInTime!.toIso8601String();
 
    },);
-    user.refresh(); //lalu refresh datanya
+    user.refresh(); 
     Get.defaultDialog(
       title: "Success",
       middleText: "Update profile success",
@@ -218,11 +222,11 @@ class AuthCController extends GetxController {
   }
 
   void changeStatus (String status) {
-    CollectionReference users = firestore.collection("users"); //masuk ke collection users
+    CollectionReference users = firestore.collection("users"); 
 
-    String date = DateTime.now().toIso8601String(); //deklarasi tangal
+    String date = DateTime.now().toIso8601String(); 
 
-    users.doc(_currentUser!.email).update({ //lalu  masuk ke docs nya (email user) dan update datanya dengan parameter yg dikirim
+    users.doc(_currentUser!.email).update({ 
       'status' : status,
       'updatedAt': date,
       'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!.toIso8601String(),
