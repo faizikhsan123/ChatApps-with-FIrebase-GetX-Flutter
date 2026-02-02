@@ -1,5 +1,4 @@
 import 'package:chat_apps/app/controllers/auth_c_controller.dart';
-import 'package:chat_apps/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -8,7 +7,7 @@ import 'package:lottie/lottie.dart';
 import '../controllers/cari_controller.dart';
 
 class CariView extends GetView<CariController> {
-  final authC = Get.find<AuthCController>(); //import auth controller
+  final authC = Get.find<AuthCController>();
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
@@ -25,11 +24,9 @@ class CariView extends GetView<CariController> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
-                onChanged: (value) => controller.searchUser(
-                  value,
-                  authC.user!.value.email!, //menangkap data yang diketik pada textfield dan menangkap email user yang sekarang login
-                ), 
-                controller: controller.searC, //controllernya
+                onChanged: (value) =>
+                    controller.searchUser(value, authC.user!.value.email!),
+                controller: controller.searC,
                 cursorColor: Colors.amber,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
@@ -88,7 +85,7 @@ class CariView extends GetView<CariController> {
                     ),
                     trailing: GestureDetector(
                       onTap: () {
-                        Get.toNamed(Routes.CHAT);
+                       authC.addNewConnection(user['email']);  //jalankan function addNewConnection yang punya parameter email
                       },
                       child: const Chip(label: Text("message")),
                     ),

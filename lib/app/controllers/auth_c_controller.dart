@@ -1,3 +1,4 @@
+
 import 'package:chat_apps/app/data/models/test_user_model.dart';
 import 'package:chat_apps/app/routes/app_pages.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -18,7 +19,7 @@ class AuthCController extends GetxController {
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  var user = TestUser().obs; 
+  var user = TestUser().obs;
 
   Future<void> firstinitializeApp() async {
     await autoLogin().then((value) {
@@ -54,7 +55,7 @@ class AuthCController extends GetxController {
 
         CollectionReference users = firestore.collection("users");
 
-      await  users.doc(_currentUser!.email).update({ //tambahkan await di sini
+        await users.doc(_currentUser!.email).update({
           'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!
               .toIso8601String(),
           'updatedAt': DateTime.now().toIso8601String(),
@@ -64,7 +65,7 @@ class AuthCController extends GetxController {
 
         final dataUserTerkini = userTerkini.data() as Map<String, dynamic>;
 
-       user(TestUser.fromJson(dataUserTerkini)); //from json itu dia butuh mapping data mappingnnya dari yg dataUserTerkini
+        user(TestUser.fromJson(dataUserTerkini));
         return true;
       } else {
         return false;
@@ -117,13 +118,13 @@ class AuthCController extends GetxController {
         final chekuser = await users.doc(_currentUser!.email).get();
 
         if (chekuser.exists) {
-        await users.doc(_currentUser!.email).update({ //tambahkawan await agar proses berjalan terlebih dahulu
+          await users.doc(_currentUser!.email).update({
             'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!
                 .toIso8601String(),
             'updatedAt': DateTime.now().toIso8601String(),
           });
         } else {
-        await  users.doc(_currentUser!.email).set({ //tambahkawan await agar proses berjalan terlebih dahulu
+          await users.doc(_currentUser!.email).set({
             'uid': userCredential!.user!.uid,
             'name': _currentUser!.displayName,
             'email': _currentUser!.email,
@@ -134,10 +135,8 @@ class AuthCController extends GetxController {
             'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!
                 .toIso8601String(),
             'updatedAt': DateTime.now().toIso8601String(),
-            'KeyName': _currentUser!.displayName!
-                .substring(0, 1)
-                .toUpperCase(), 
-            'chats': [], //tambahkan chats
+            'KeyName': _currentUser!.displayName!.substring(0, 1).toUpperCase(),
+            'chats': [],
           });
         }
 
@@ -145,10 +144,7 @@ class AuthCController extends GetxController {
 
         final dataUserTerkini = userTerkini.data() as Map<String, dynamic>;
 
-
-       user(TestUser.fromJson(dataUserTerkini)); //from json itu dia butuh mapping data mappingnnya dari yg dataUserTerkini
-
-       
+        user(TestUser.fromJson(dataUserTerkini));
 
         final box = GetStorage();
         if (box.read('skip') != null || box.read('skip') == true) {
@@ -177,9 +173,7 @@ class AuthCController extends GetxController {
 
     users.doc(_currentUser!.email).update({
       'name': name,
-      'KeyName': name
-          .substring(0, 1)
-          .toUpperCase(), 
+      'KeyName': name.substring(0, 1).toUpperCase(),
       'status': status,
       'updatedAt': date,
       'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!
@@ -188,9 +182,7 @@ class AuthCController extends GetxController {
 
     user.update((val) {
       val!.name = name;
-      val!.keyName = name
-          .substring(0, 1)
-          .toUpperCase(); 
+      val!.keyName = name.substring(0, 1).toUpperCase();
       val!.status = status;
       val!.updatedAt = date;
       val!.lastSignIn = userCredential!.user!.metadata!.lastSignInTime!
@@ -236,5 +228,62 @@ class AuthCController extends GetxController {
         Get.back();
       },
     );
+  }
+
+  //search
+  void addNewConnection(String friendEmail) async {
+    final date = DateTime.now().toIso8601String();
+
+    //ini yang collection chats
+
+    CollectionReference chats = firestore.collection(
+      "chats",
+    ); //collection chats
+
+    final newChatDocs = await chats.add({
+      //masukkan ke collection chats. dengan docs baru(auto generate)
+      "connection": [
+        //connection ini berisi email user dan email friend
+        _currentUser!.email,
+        friendEmail,
+      ],
+      "total_chat": 0,
+      "total_read": 0,
+      "total_unread": 0,
+      "chat": [],
+      "lastTime": date,
+    });
+
+
+
+    //ini yang collection users
+    CollectionReference users = firestore.collection("users");
+
+   await users.doc(_currentUser!.email).update({
+      "chats": [
+        {
+          "connection": friendEmail, //masukkan email friend ke collection users
+          "chat_id": newChatDocs
+              .id, //chat id ini merupakan id docs baru yang di generate diatas
+          "lastTime": date,
+        },
+      ],
+    });
+
+    //uppdate di model juga
+    user.update((val) {
+      val!.chats = [
+        ChatsUser(
+          // List dari model TestUser
+          connection: friendEmail,
+          chatId: newChatDocs.id,
+          lastTime: date,
+        ),
+      ];
+    });
+
+    user.refresh();
+
+    Get.toNamed(Routes.CHAT);
   }
 }
