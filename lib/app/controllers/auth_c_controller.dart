@@ -1,4 +1,3 @@
-
 import 'package:chat_apps/app/data/models/test_user_model.dart';
 import 'package:chat_apps/app/routes/app_pages.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -230,60 +229,81 @@ class AuthCController extends GetxController {
     );
   }
 
-  //search
   void addNewConnection(String friendEmail) async {
+    bool flagNewConnection = false; //buat koonkesion baru
     final date = DateTime.now().toIso8601String();
-
-    //ini yang collection chats
-
-    CollectionReference chats = firestore.collection(
-      "chats",
-    ); //collection chats
-
-    final newChatDocs = await chats.add({
-      //masukkan ke collection chats. dengan docs baru(auto generate)
-      "connection": [
-        //connection ini berisi email user dan email friend
-        _currentUser!.email,
-        friendEmail,
-      ],
-      "total_chat": 0,
-      "total_read": 0,
-      "total_unread": 0,
-      "chat": [],
-      "lastTime": date,
-    });
-
-
-
-    //ini yang collection users
+    CollectionReference chats = firestore.collection("chats");
     CollectionReference users = firestore.collection("users");
 
-   await users.doc(_currentUser!.email).update({
-      "chats": [
-        {
-          "connection": friendEmail, //masukkan email friend ke collection users
-          "chat_id": newChatDocs
-              .id, //chat id ini merupakan id docs baru yang di generate diatas
-          "lastTime": date,
-        },
-      ],
-    });
+    final docUser = await users
+        .doc(_currentUser!.email)
+        .get(); //ambil data user
 
-    //uppdate di model juga
-    user.update((val) {
-      val!.chats = [
-        ChatsUser(
-          // List dari model TestUser
-          connection: friendEmail,
-          chatId: newChatDocs.id,
-          lastTime: date,
-        ),
-      ];
-    });
+    final docChat = (docUser.data() as Map<String, dynamic>)["chats"] as List;
+    //hanya mengambil data chat saja dan diubah menjadi list
 
-    user.refresh();
+    var chat_id; //variabel untuk menyimpan chat id
 
-    Get.toNamed(Routes.CHAT);
+    if (docChat.length != 0) {
+      //kalo doc chat ada datanya
+      docChat.forEach((element) {
+        if (element["connection"] == friendEmail) { //kalo koneksi sama orang tersebut
+          chat_id = element["chat_id"]; //ambil chat id
+        }
+      });
+
+      if (chat_id != null) {
+        //sudah pernah buat koneksi dengan orang tersebut
+        flagNewConnection = false;
+      } else {
+        //belum pernah buat koneksi dengan orang tersebut
+        flagNewConnection = true;
+      }
+    } else {
+      //belum pernah chat sama siapapun
+      flagNewConnection = true;
+    }
+
+    if (flagNewConnection) {
+      //buat koneksi
+      final newChatDocs = await chats.add({
+        "connection": [_currentUser!.email, friendEmail],
+        "total_chat": 0,
+        "total_read": 0,
+        "total_unread": 0,
+        "chat": [],
+        "lastTime": date,
+      });
+
+      await users.doc(_currentUser!.email).update({
+        "chats": [
+          {
+            "connection": friendEmail,
+            "chat_id": newChatDocs.id,
+            "lastTime": date,
+          },
+        ],
+      });
+
+      user.update((val) {
+        val!.chats = [
+          ChatsUser(
+            connection: friendEmail,
+            chatId: newChatDocs.id,
+            lastTime: date,
+          ),
+        ];
+      });
+
+      chat_id = newChatDocs.id; //ambil chat id
+      user.refresh();
+    }
+
+    // ================= TAMBAHAN PENTING =================
+    // chat baru ATAU chat lama → tetap pindah halaman
+    if (chat_id != null) {
+      print(chat_id); //print chat id
+      Get.toNamed(Routes.CHAT, arguments: chat_id); //mengirimkan chat id
+    }
   }
 }

@@ -83,9 +83,9 @@ class CariView extends GetView<CariController> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    trailing: GestureDetector(
+                    trailing: InkWell(
                       onTap: () {
-                       authC.addNewConnection(user['email']);  //jalankan function addNewConnection yang punya parameter email
+                        authC.addNewConnection(user['email']);
                       },
                       child: const Chip(label: Text("message")),
                     ),
