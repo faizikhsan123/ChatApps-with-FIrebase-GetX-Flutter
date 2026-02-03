@@ -50,6 +50,7 @@ class ChatView extends GetView<ChatController> {
                 children: [
                   ItemsChat(isSender: true),
                   ItemsChat(isSender: false),
+                 
                 ],
               ),
             ),
@@ -110,6 +111,7 @@ class ChatView extends GetView<ChatController> {
               ],
             ),
           ),
+           
           Obx(
             () => controller.IsShowEmoji.isTrue
                 ? Container(
@@ -143,6 +145,9 @@ class ChatView extends GetView<ChatController> {
                   )
                 : Container(),
           ),
+        
+
+        
         ],
       ),
     );

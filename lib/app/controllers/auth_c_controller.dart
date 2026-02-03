@@ -230,7 +230,7 @@ class AuthCController extends GetxController {
   }
 
   void addNewConnection(String friendEmail) async {
-    bool flagNewConnection = false; //buat koonkesion baru
+    bool flagNewConnection = false;
     final date = DateTime.now().toIso8601String();
     CollectionReference chats = firestore.collection("chats");
     CollectionReference users = firestore.collection("users");
@@ -244,28 +244,83 @@ class AuthCController extends GetxController {
 
     var chat_id; //variabel untuk menyimpan chat id
 
-    if (docChat.length != 0) {
+    if (docChat.isNotEmpty) {
       //kalo doc chat ada datanya
-      docChat.forEach((element) {
-        if (element["connection"] == friendEmail) { //kalo koneksi sama orang tersebut
-          chat_id = element["chat_id"]; //ambil chat id
+      for (var element in docChat) {
+        if (element["connection"] == friendEmail) {
+          //jika koneksi sama
+          chat_id = element["chat_id"]; //ambil chat idnya
+          break;
         }
-      });
+      }
 
       if (chat_id != null) {
-        //sudah pernah buat koneksi dengan orang tersebut
-        flagNewConnection = false;
+        flagNewConnection = false; //sudah pernah chat
       } else {
-        //belum pernah buat koneksi dengan orang tersebut
-        flagNewConnection = true;
+        flagNewConnection = true; //belum pernah chat dengan dia
       }
     } else {
-      //belum pernah chat sama siapapun
-      flagNewConnection = true;
+      flagNewConnection = true; //belum pernah chat sama siapapun
     }
 
     if (flagNewConnection) {
-      //buat koneksi
+      //cek dari collection chats cari yang connectionnya mereka berdua
+      final cekKoneksiberdua = await chats
+          .where(
+            "connection",
+            whereIn: [
+              [_currentUser!.email, friendEmail],
+              [friendEmail, _currentUser!.email], //tidak peduli urutan
+            ],
+          )
+          .limit(1)
+          .get();
+
+      if (cekKoneksiberdua.docs.isNotEmpty) {
+        //jika ditemukan isi dari cekKoneksiberdua (field connection)
+        final chatDataId = cekKoneksiberdua.docs.first.id; //ambil idnya
+        final chatData = cekKoneksiberdua.docs.first.data() as Map<String, dynamic>; //ambil datanya first itu seperti [0] jadi dia pasti unik / tidak ada duplikat
+
+
+        await users.doc(_currentUser!.email).update({
+          "chats": FieldValue.arrayUnion([
+             //tambah data ke array, kalau belum ada yang sama persis
+
+          // Sifat penting:
+
+          // ✅ Tidak menimpa isi chats lama
+
+          // ✅ Tidak bikin duplikat kalau isinya SAMA PERSIS
+
+          // ❌ Kalau beda dikit → tetap masuk
+            {
+              "connection": friendEmail,
+              "chat_id": chatDataId,
+              "lastTime": chatData["lastTime"],
+            },
+          ]),
+        });
+
+        user.update((val) {
+          val!.chats ??= []; //jika null, buat array
+          val.chats!.add(
+            ChatsUser(
+              connection: friendEmail,
+              chatId: chatDataId,
+              lastTime: chatData["lastTime"],
+            ),
+          );
+        });
+
+        chat_id = chatDataId;
+        user.refresh();
+
+        //PENTING: karena chat lama sudah ada → JANGAN bikin docs baru
+        Get.toNamed(Routes.CHAT, arguments: chat_id);
+        return; // ⬅️ ⬅️ ⬅️ INI PENYELAMAT HIDUP
+      }
+
+      //mereka belum pernah chat jadi buat baru
       final newChatDocs = await chats.add({
         "connection": [_currentUser!.email, friendEmail],
         "total_chat": 0,
@@ -276,34 +331,42 @@ class AuthCController extends GetxController {
       });
 
       await users.doc(_currentUser!.email).update({
-        "chats": [
+        "chats": FieldValue.arrayUnion([
+          //tambah data ke array, kalau belum ada yang sama persis
+
+          // Sifat penting:
+
+          // ✅ Tidak menimpa isi chats lama
+
+          // ✅ Tidak bikin duplikat kalau isinya SAMA PERSIS
+
+          // ❌ Kalau beda dikit → tetap masuk
           {
             "connection": friendEmail,
             "chat_id": newChatDocs.id,
             "lastTime": date,
           },
-        ],
+        ]),
       });
 
       user.update((val) {
-        val!.chats = [
+        val!.chats ??= []; //kalo ga ada chats, buat array
+        val.chats!.add(
           ChatsUser(
             connection: friendEmail,
             chatId: newChatDocs.id,
             lastTime: date,
           ),
-        ];
+        );
       });
 
-      chat_id = newChatDocs.id; //ambil chat id
+      chat_id = newChatDocs.id;
       user.refresh();
     }
 
-    // ================= TAMBAHAN PENTING =================
-    // chat baru ATAU chat lama → tetap pindah halaman
     if (chat_id != null) {
-      print(chat_id); //print chat id
-      Get.toNamed(Routes.CHAT, arguments: chat_id); //mengirimkan chat id
+      print(chat_id);
+      Get.toNamed(Routes.CHAT, arguments: chat_id);
     }
   }
 }
