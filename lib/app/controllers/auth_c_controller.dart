@@ -273,7 +273,7 @@ class AuthCController extends GetxController {
               [friendEmail, _currentUser!.email], //tidak peduli urutan
             ],
           )
-          .limit(1)
+            .limit(1)
           .get();
 
       if (cekKoneksiberdua.docs.isNotEmpty) {

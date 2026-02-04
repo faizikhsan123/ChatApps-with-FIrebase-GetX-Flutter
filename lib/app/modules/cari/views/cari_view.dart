@@ -68,7 +68,13 @@ class CariView extends GetView<CariController> {
                   final user = controller.tempSearch[index];
 
                   return ListTile(
-                    leading: CircleAvatar(),
+                    leading: CircleAvatar(
+                      radius: 20,
+                      backgroundImage: NetworkImage(
+                        user['photoUrl'] ?? //jika null maka diganti
+                            'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+                      ),
+                    ),
                     title: Text(
                       user['name'],
                       style: const TextStyle(
