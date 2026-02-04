@@ -12,7 +12,8 @@
         {
             "connection" : "",
             "chat_id" : "",
-            "lastTime" : ""
+            "lastTime" : "",
+            "total_unread" : 0
         }
     ]
     

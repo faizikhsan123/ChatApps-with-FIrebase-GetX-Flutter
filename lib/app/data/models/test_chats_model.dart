@@ -1,22 +1,11 @@
 class TestChats {
   List<String>? connection;
-  String? totalChat;
-  String? totalReead;
-  String? totalUnread;
   List<Chats>? chats;
 
-  TestChats(
-      {this.connection,
-      this.totalChat,
-      this.totalReead,
-      this.totalUnread,
-      this.chats});
+  TestChats({this.connection, this.chats});
 
   TestChats.fromJson(Map<String, dynamic> json) {
     connection = json['connection'].cast<String>();
-    totalChat = json['total_chat'];
-    totalReead = json['total_reead'];
-    totalUnread = json['total_unread'];
     if (json['chats'] != null) {
       chats = <Chats>[];
       json['chats'].forEach((v) {
@@ -28,9 +17,6 @@ class TestChats {
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
     data['connection'] = connection;
-    data['total_chat'] = totalChat;
-    data['total_reead'] = totalReead;
-    data['total_unread'] = totalUnread;
     if (chats != null) {
       data['chats'] = chats?.map((v) => v.toJson()).toList();
     }

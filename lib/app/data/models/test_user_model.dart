@@ -8,7 +8,7 @@ class TestUser {
   String? photoUrl;
   String? lastSignIn;
   String? keyName;
-  List<ChatsUser>? chats; //ganti chatsUser
+  List<ChatsUser>? chats;
 
   TestUser(
       {this.uid,
@@ -33,7 +33,7 @@ class TestUser {
     lastSignIn = json['lastSignIn'];
     keyName = json['KeyName'];
     if (json['chats'] != null) {
-      chats = <ChatsUser>[]; //ganti chatsUser
+      chats = <ChatsUser>[];
       json['chats'].forEach((v) {
         chats?.add(ChatsUser.fromJson(v));
       });
@@ -58,17 +58,19 @@ class TestUser {
   }
 }
 
-class ChatsUser { //ganti chatsUser
+class ChatsUser {
   String? connection;
   String? chatId;
   String? lastTime;
+  int? totalUnread;
 
-  ChatsUser({this.connection, this.chatId, this.lastTime}); //ganti chatsUser
+  ChatsUser({this.connection, this.chatId, this.lastTime, this.totalUnread});
 
-  ChatsUser.fromJson(Map<String, dynamic> json) { //ganti chatsUser
+  ChatsUser.fromJson(Map<String, dynamic> json) {
     connection = json['connection'];
     chatId = json['chat_id'];
     lastTime = json['lastTime'];
+    totalUnread = json['total_unread'];
   }
 
   Map<String, dynamic> toJson() {
@@ -76,6 +78,7 @@ class ChatsUser { //ganti chatsUser
     data['connection'] = connection;
     data['chat_id'] = chatId;
     data['lastTime'] = lastTime;
+    data['total_unread'] = totalUnread;
     return data;
   }
 }

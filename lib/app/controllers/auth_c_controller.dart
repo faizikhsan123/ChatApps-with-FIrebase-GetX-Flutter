@@ -235,127 +235,97 @@ class AuthCController extends GetxController {
     CollectionReference chats = firestore.collection("chats");
     CollectionReference users = firestore.collection("users");
 
-    final docUser = await users
-        .doc(_currentUser!.email)
-        .get(); //ambil data user
+    final docUser = await users.doc(_currentUser!.email).get();
 
     final docChat = (docUser.data() as Map<String, dynamic>)["chats"] as List;
-    //hanya mengambil data chat saja dan diubah menjadi list
 
-    var chat_id; //variabel untuk menyimpan chat id
+    var chat_id;
 
     if (docChat.isNotEmpty) {
-      //kalo doc chat ada datanya
       for (var element in docChat) {
         if (element["connection"] == friendEmail) {
-          //jika koneksi sama
-          chat_id = element["chat_id"]; //ambil chat idnya
+          chat_id = element["chat_id"];
           break;
         }
       }
 
       if (chat_id != null) {
-        flagNewConnection = false; //sudah pernah chat
+        flagNewConnection = false;
       } else {
-        flagNewConnection = true; //belum pernah chat dengan dia
+        flagNewConnection = true;
       }
     } else {
-      flagNewConnection = true; //belum pernah chat sama siapapun
+      flagNewConnection = true;
     }
 
     if (flagNewConnection) {
-      //cek dari collection chats cari yang connectionnya mereka berdua
       final cekKoneksiberdua = await chats
           .where(
             "connection",
             whereIn: [
               [_currentUser!.email, friendEmail],
-              [friendEmail, _currentUser!.email], //tidak peduli urutan
+              [friendEmail, _currentUser!.email],
             ],
           )
-            .limit(1)
           .get();
 
       if (cekKoneksiberdua.docs.isNotEmpty) {
-        //jika ditemukan isi dari cekKoneksiberdua (field connection)
-        final chatDataId = cekKoneksiberdua.docs.first.id; //ambil idnya
-        final chatData = cekKoneksiberdua.docs.first.data() as Map<String, dynamic>; //ambil datanya first itu seperti [0] jadi dia pasti unik / tidak ada duplikat
-
+        final chatDataId = cekKoneksiberdua.docs.first.id;
+        final chatData =
+            cekKoneksiberdua.docs.first.data() as Map<String, dynamic>;
 
         await users.doc(_currentUser!.email).update({
+          //sekarang add chats bya seperti ini sesuaikan dengan models baru
           "chats": FieldValue.arrayUnion([
-             //tambah data ke array, kalau belum ada yang sama persis
-
-          // Sifat penting:
-
-          // ✅ Tidak menimpa isi chats lama
-
-          // ✅ Tidak bikin duplikat kalau isinya SAMA PERSIS
-
-          // ❌ Kalau beda dikit → tetap masuk
             {
               "connection": friendEmail,
               "chat_id": chatDataId,
               "lastTime": chatData["lastTime"],
+              "total_unread": 0, //jadi pas klik message dia seakan uda baca
             },
           ]),
         });
 
-        user.update((val) {
-          val!.chats ??= []; //jika null, buat array
-          val.chats!.add(
-            ChatsUser(
-              connection: friendEmail,
-              chatId: chatDataId,
-              lastTime: chatData["lastTime"],
-            ),
-          );
-        });
+        ChatsUser(
+          connection: friendEmail,
+          chatId: chatDataId,
+          lastTime: chatData["lastTime"],
+          totalUnread: 0,
+        );
 
         chat_id = chatDataId;
         user.refresh();
 
-        //PENTING: karena chat lama sudah ada → JANGAN bikin docs baru
         Get.toNamed(Routes.CHAT, arguments: chat_id);
-        return; // ⬅️ ⬅️ ⬅️ INI PENYELAMAT HIDUP
+        return;
       }
 
-      //mereka belum pernah chat jadi buat baru
       final newChatDocs = await chats.add({
+        //sekarang add chats bya seperti ini sesuaikan dengan models baru
         "connection": [_currentUser!.email, friendEmail],
-        "total_chat": 0,
-        "total_read": 0,
-        "total_unread": 0,
         "chat": [],
-        "lastTime": date,
       });
 
       await users.doc(_currentUser!.email).update({
+        //sekarang add chats bya seperti ini sesuaikan dengan models baru
         "chats": FieldValue.arrayUnion([
-          //tambah data ke array, kalau belum ada yang sama persis
-
-          // Sifat penting:
-
-          // ✅ Tidak menimpa isi chats lama
-
-          // ✅ Tidak bikin duplikat kalau isinya SAMA PERSIS
-
-          // ❌ Kalau beda dikit → tetap masuk
           {
             "connection": friendEmail,
             "chat_id": newChatDocs.id,
             "lastTime": date,
+            "total_unread": 0, //jadi pas klik message dia seakan uda baca
           },
         ]),
       });
 
       user.update((val) {
-        val!.chats ??= []; //kalo ga ada chats, buat array
+        val!.chats ??= [];
         val.chats!.add(
           ChatsUser(
             connection: friendEmail,
             chatId: newChatDocs.id,
             lastTime: date,
+            totalUnread: 0,
           ),
         );
       });
