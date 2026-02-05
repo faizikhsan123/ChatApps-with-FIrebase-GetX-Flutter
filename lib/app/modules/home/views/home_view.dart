@@ -8,8 +8,8 @@ import 'package:get/get.dart';
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
-  final authC = Get.find<AuthCController>(); //import auth controller
-  
+  final authC = Get.find<AuthCController>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,87 +56,79 @@ class HomeView extends GetView<HomeController> {
             ),
           ),
           SizedBox(height: 10),
-        Expanded(
-          
-  child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-    
-    //stream builder ngambil data realtimne wajib dikasi tipe
-    stream: controller.chatStream(authC.user!.value.email!), 
-    //jalankan stream dan ambil email user yang sedang login
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.active) {
-        //jika koenksi terhubung
+          Expanded(
+            child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              stream: controller.chatStream(authC.user!.value.email!),
 
-        var allChats = (snapshot.data!.data() as Map<String, dynamic>)["chats"] as List;
-        //ambil isi dari snapshot trs ambil data dari firebase kaarena data dari firebase masi object
-        //diubah ke mapping trs ambil key chats dan diubah ke bentuk list
-        //kenappa akrena memastikan var allchats adalah list dan bisa dapat length dkk
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.active) {
+                  var allChats =
+                      (snapshot.data!.data() as Map<String, dynamic>)["chats"]
+                          as List;
+                          //sorting data berdasarkan lastTime
 
-        return ListView.builder(
-          itemCount: allChats.length,
-          itemBuilder: (context, index) {
-            return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-              //stream builder kedua untuk user
-              stream: controller.UserStream( allChats[index]["connection"]),
-              //stream nya bngambil email  darri connection (email teman kita)
+                  return ListView.builder(
+                    itemCount: allChats.length,
+                    itemBuilder: (context, index) {
+                      return StreamBuilder<
+                        DocumentSnapshot<Map<String, dynamic>>
+                      >(
+                        stream: controller.UserStream(
+                          allChats[index]["connection"],
+                        ),
 
-              builder: (context, snapshot2) {
-                if (snapshot2.connectionState == ConnectionState.active) {
+                        builder: (context, snapshot2) {
+                          if (snapshot2.connectionState ==
+                              ConnectionState.active) {
+                            var allUser =
+                                snapshot2.data!.data() as Map<String, dynamic>;
 
-                  var allUser = snapshot2.data!.data() as Map<String, dynamic>;
-                  //AMBIL DATA USER DARI SNAPSHOT2 (BUKAN SNAPSHOT)
-
-                  return ListTile(
-                    onTap: () {
-                      Get.toNamed(
-                        Routes.CHAT, 
+                            return ListTile(
+                              onTap: () {
+                                Get.toNamed(Routes.CHAT);
+                              },
+                              leading: allUser["photoUrl"] == null
+                                  ? CircleAvatar()
+                                  : CircleAvatar(
+                                      backgroundImage: NetworkImage(
+                                        allUser["photoUrl"],
+                                      ),
+                                    ),
+                              title: Text(
+                                allUser["name"] ?? "No Name",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              subtitle: Text(
+                                allUser["status"] ?? "",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              trailing: allChats[index]["total_unread"] == 0
+                                  ? null
+                                  : Chip(
+                                      label: Text(
+                                        allChats[index]["total_unread"]
+                                            .toString(),
+                                      ),
+                                    ),
+                            );
+                          }
+                          return Center(child: CircularProgressIndicator());
+                        },
                       );
                     },
-                    leading: allUser["photoUrl"] == null ? CircleAvatar()
-                     : CircleAvatar( //jika photoUrl null maka tampil circleavatar jika tidak tampil gambar
-                      backgroundImage: NetworkImage(
-                        allUser["photoUrl"],
-                      ),
-                    ),
-                    title: Text(
-                      allUser["name"] ?? "No Name", //ambil dari stream kedua
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    subtitle: Text(
-                      allUser["status"] ?? "", //ambil dari stream kedua
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    trailing: allChats[index]["total_unread"] == 0 ? null : Chip( //jika total_unread 0 maka null
-                      label: Text(
-                        allChats[index]["total_unread"].toString(), //ambil dari stream pertama
-                      ),
-                    ),
-                    
                   );
-                  
                 }
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
+
+                return Center(child: CircularProgressIndicator());
               },
-            );
-          },
-        );
-      }
-
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    },
-  ),
-),
-
+            ),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(

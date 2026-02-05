@@ -271,8 +271,7 @@ class AuthCController extends GetxController {
 
       if (cekKoneksiberdua.docs.isNotEmpty) {
         final chatDataId = cekKoneksiberdua.docs.first.id;
-        final chatData =
-            cekKoneksiberdua.docs.first.data() as Map<String, dynamic>;
+        final chatData = cekKoneksiberdua.docs.first.data() as Map<String, dynamic>;
 
         await users.doc(_currentUser!.email).update({
           //sekarang add chats bya seperti ini sesuaikan dengan models baru
@@ -290,7 +289,7 @@ class AuthCController extends GetxController {
           connection: friendEmail,
           chatId: chatDataId,
           lastTime: chatData["lastTime"],
-          totalUnread: 0,
+          totalUnread: 0
         );
 
         chat_id = chatDataId;
