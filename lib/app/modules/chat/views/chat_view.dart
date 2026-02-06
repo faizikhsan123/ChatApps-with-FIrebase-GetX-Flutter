@@ -1,3 +1,4 @@
+import 'package:chat_apps/app/controllers/auth_c_controller.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 
@@ -6,7 +7,8 @@ import 'package:get/get.dart';
 import '../controllers/chat_controller.dart';
 
 class ChatView extends GetView<ChatController> {
-  const ChatView({Key? key}) : super(key: key);
+  final authC = Get.find<AuthCController>(); //import auth cotnroller
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,7 +52,6 @@ class ChatView extends GetView<ChatController> {
                 children: [
                   ItemsChat(isSender: true),
                   ItemsChat(isSender: false),
-                 
                 ],
               ),
             ),
@@ -66,13 +67,13 @@ class ChatView extends GetView<ChatController> {
                 Expanded(
                   child: Container(
                     child: TextField(
-                      controller: controller.chatC, //controller untuk textfield
-                      focusNode: controller.focusNode, //focus node untuk mengatur focus pada textfield apakah lagi terbuka atau tidak
+                      controller: controller.chatC,
+                      focusNode: controller.focusNode,
                       decoration: InputDecoration(
                         prefixIcon: IconButton(
                           onPressed: () {
-                            controller.focusNode.unfocus(); //menghilangkan focus (keyboard)
-                            controller.IsShowEmoji.toggle(); //mengubah nilai isShowEmoji (kebalikannya)
+                            controller.focusNode.unfocus();
+                            controller.IsShowEmoji.toggle();
                           },
                           icon: Icon(Icons.emoji_emotions_outlined),
                         ),
@@ -100,10 +101,17 @@ class ChatView extends GetView<ChatController> {
                   borderRadius: BorderRadius.all(Radius.circular(100)),
                   color: Colors.blue,
                   child: InkWell(
-                    onTap: () {},
-
                     child: IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        controller.newChat(
+                          authC.user.value.email!,
+                          Get.parameters["chatId"]!,
+                          Get.parameters["FriendEmail"]!,
+                          controller.chatC.text,
+                        );
+
+                        controller.chatC.clear(); //opsional: bersihkan input setelah kirim
+                      },
                       icon: Icon(Icons.send, color: Colors.white),
                     ),
                   ),
@@ -111,25 +119,25 @@ class ChatView extends GetView<ChatController> {
               ],
             ),
           ),
-           
+
           Obx(
             () => controller.IsShowEmoji.isTrue
                 ? Container(
                     height: 300,
                     child: EmojiPicker(
                       onEmojiSelected: (Category? category, Emoji emoji) {
-                        controller.addEmojiToChat(emoji); //jalankan method addEmojiToChat yg punya parameter emoji 
+                        controller.addEmojiToChat(emoji);
                       },
 
                       onBackspacePressed: () {
-                        controller.deleteEmoji(); //jalankan method deleteEmoji
+                        controller.deleteEmoji();
                       },
 
                       config: Config(
                         checkPlatformCompatibility: true,
                         emojiViewConfig: EmojiViewConfig(
-                          emojiSizeMax: 28, //ukuran emoji
-                          columns: 5, //emoji yang tampil per baris
+                          emojiSizeMax: 28,
+                          columns: 5,
                         ),
                         viewOrderConfig: const ViewOrderConfig(
                           top: EmojiPickerItem.categoryBar,
@@ -145,9 +153,6 @@ class ChatView extends GetView<ChatController> {
                   )
                 : Container(),
           ),
-        
-
-        
         ],
       ),
     );

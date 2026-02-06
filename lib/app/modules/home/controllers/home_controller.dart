@@ -5,7 +5,7 @@ class HomeController extends GetxController {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   //stream daftar chat milik user (subcollection)
-  Stream<QuerySnapshot<Map<String, dynamic>>> chatStream(String email) {
+  Stream<QuerySnapshot<Map<String, dynamic>>> chatStream(String email) {  //Digunakan untuk mengambil banyak dokumen hasil qu
     return firestore
         .collection("users") //ambil dari collection users
         .doc(email) //doc user yg login

@@ -183,7 +183,7 @@ class AuthCController extends GetxController {
                 .toIso8601String(),
             'updatedAt': DateTime.now().toIso8601String(),
             'KeyName': _currentUser!.displayName!.substring(0, 1).toUpperCase(),
-            'chats': [], // tambahkan ini
+        
           });
 
           await users
@@ -332,6 +332,8 @@ class AuthCController extends GetxController {
   }
 
   void addNewConnection(String friendEmail) async {
+    if (_currentUser == null) return;
+
     bool flagNewConnection = false;
     final date = DateTime.now().toIso8601String();
 
@@ -357,13 +359,11 @@ class AuthCController extends GetxController {
       if (checkKoneksic.docs.isNotEmpty) {
         //jika sudah ada chat
         flagNewConnection = false;
-        chat_id = checkKoneksic.docs[0].id; //ambil id chat
+        chat_id = checkKoneksic.docs[0].id;
       } else {
-        //belum pernah chat dengan friendEmail
         flagNewConnection = true;
       }
     } else {
-      //belum punya chat sama sekali
       flagNewConnection = true;
     }
 
@@ -386,7 +386,7 @@ class AuthCController extends GetxController {
         final chatData =
             cekKoneksiberdua.docs.first.data() as Map<String, dynamic>;
 
-        //buat dokumen chat di subcollection user (nested collection)
+        //buat dokumen chat di user login
         await users
             .doc(_currentUser!.email)
             .collection("chats")
@@ -400,18 +400,23 @@ class AuthCController extends GetxController {
         chat_id = chatDataId;
         user.refresh();
 
-        Get.toNamed(Routes.CHAT, arguments: chat_id);
+        Get.toNamed(
+          Routes.CHAT,
+          parameters: { //lempar parameter
+            "chatId": chat_id.toString(),
+            "FriendEmail": friendEmail,
+          },
+        );
         return;
       }
 
       //jika chat global belum ada, buat baru
       final newChatDocs = await chats.add({
         "connection": [_currentUser!.email, friendEmail],
-        "chat": [],
         "lastTime": date,
       });
 
-      //buat nested collection chats di user
+      //buat chat untuk user login
       await users
           .doc(_currentUser!.email)
           .collection("chats")
@@ -422,15 +427,26 @@ class AuthCController extends GetxController {
             "total_unread": 0,
           });
 
+      //buat chat untuk friend (INI YANG PENTING)
+      await users.doc(friendEmail).collection("chats").doc(newChatDocs.id).set({
+        "connection": _currentUser!.email,
+        "lastTime": date,
+        "total_unread": 0,
+      });
+
       chat_id = newChatDocs.id;
       user.refresh();
     }
 
-        if (chat_id != null) {
+    if (chat_id != null) {
       print(chat_id);
-
-      Get.toNamed(Routes.CHAT, arguments: chat_id);
+      Get.toNamed(
+        Routes.CHAT,
+        parameters: { //lempar parameter
+            "chatId": chat_id.toString(),
+            "FriendEmail": friendEmail,
+          },
+      ); //mengirim argument ke halaman chat
     }
-
   }
 }

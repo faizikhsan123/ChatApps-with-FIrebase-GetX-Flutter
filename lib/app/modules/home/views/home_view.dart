@@ -57,12 +57,13 @@ class HomeView extends GetView<HomeController> {
           ),
           SizedBox(height: 10),
           Expanded(
-            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>( //Digunakan untuk mengambil banyak dokumen hasil query.
               //stream ke subcollection chats milik user
               stream: controller.chatStream(authC.user!.value.email!),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.active) {
                   var listDocs = snapshot.data!.docs;
+                  
 
                   if (listDocs.isEmpty) {
                     return Center(child: Text("Belum ada chat"));
@@ -73,22 +74,21 @@ class HomeView extends GetView<HomeController> {
                     itemBuilder: (context, index) {
                       var chatData = listDocs[index].data();
 
-                      return StreamBuilder<
-                        DocumentSnapshot<Map<String, dynamic>>
-                      >(
+                      return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                         stream: controller.UserStream(chatData["connection"]),
                         builder: (context, snapshot2) {
-                          if (snapshot2.connectionState ==
-                              ConnectionState.active) {
-                            var allUser =
-                                snapshot2.data!.data() as Map<String, dynamic>;
+                          if (snapshot2.connectionState ==ConnectionState.active) {
+                            var allUser =snapshot2.data!.data() as Map<String, dynamic>;
 
                             return ListTile(
                               onTap: () {
                                 //kirim chatId ke halaman chat
-                                Get.toNamed(
+                                 Get.toNamed(
                                   Routes.CHAT,
-                                  arguments: listDocs[index].id,
+                                  parameters: {   
+                                    "chatId" : listDocs[index].id,
+                                    "FriendEmail" : chatData["connection"],
+                                  }
                                 );
                               },
                               leading: allUser["photoUrl"] == null

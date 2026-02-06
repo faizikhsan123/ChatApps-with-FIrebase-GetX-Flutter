@@ -1,31 +1,32 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 class ChatController extends GetxController {
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
   var IsShowEmoji = false.obs;
 
-  late FocusNode focusNode; //var focus node
+  late FocusNode focusNode;
 
-  late TextEditingController chatC; //controller text fied
+  late TextEditingController chatC;
 
-  void addEmojiToChat(Emoji emoji) { //method untuk menambahkan emoji ke chat
+  void addEmojiToChat(Emoji emoji) {
     chatC.text = chatC.text + emoji.emoji;
   }
 
-  void deleteEmoji() {  //method untuk menghapus emoji
-    //substring untuk mengambil sebagian teks
-    //jadi dia mulainya dari 0 sampai panjang teks dikurangi 2 (karena emoji punya 2 huruf)
+  void deleteEmoji() {
     chatC.text = chatC.text.substring(0, chatC.text.length - 2);
   }
 
   @override
   void onInit() {
     chatC = TextEditingController();
-    // TODO: implement onInit
+
     focusNode = FocusNode();
     focusNode.addListener(() {
-      //jika focus node (keyboard) ditekan maka emoji hilang
       if (focusNode.hasFocus) {
         IsShowEmoji.value = false;
       }
@@ -36,9 +37,29 @@ class ChatController extends GetxController {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     focusNode.dispose();
     chatC.dispose();
     super.dispose();
   }
+
+ void newChat(String email, String chatId, String friendEmail, String chat) async {
+  CollectionReference chats = firestore.collection("chats");
+
+  String date = DateTime.now().toIso8601String();
+
+  //ambil document berdasarkan chat id lalu di chat id itu bikin sub collection chats dan tambahkan data
+  await chats.doc(chatId).collection("chats").add({
+    "pengirim": email, //email user yg login
+    "penerima": friendEmail, // dari parameter
+    "pesan": chat,//dari textfield
+    "time": date,
+    "isRead": false,
+  });
+
+  //update lastTime
+  await chats.doc(chatId).update({
+    "lastTime": date,
+  });
+}
+
 }
