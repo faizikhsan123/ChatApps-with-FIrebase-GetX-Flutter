@@ -57,14 +57,62 @@ class AuthCController extends GetxController {
         await users.doc(_currentUser!.email).update({
           'lastSignIn': userCredential!.user!.metadata!.lastSignInTime!
               .toIso8601String(),
-          'updatedAt': DateTime.now().toIso8601String(),
         });
 
         final userTerkini = await users.doc(_currentUser!.email).get();
 
         final dataUserTerkini = userTerkini.data() as Map<String, dynamic>;
 
-        user(TestUser.fromJson(dataUserTerkini));
+        user(
+          TestUser(
+            //masukkan data ke model user secara manual
+            uid: dataUserTerkini["uid"],
+            email: dataUserTerkini["email"],
+            name: dataUserTerkini["name"],
+            status: dataUserTerkini["status"],
+            createdAt: dataUserTerkini["createdAt"],
+            updatedAt: dataUserTerkini["updatedAt"],
+            photoUrl: dataUserTerkini["photoUrl"],
+            lastSignIn: dataUserTerkini["lastSignIn"],
+            keyName: dataUserTerkini["KeyName"],
+          ),
+        );
+
+        final ListChat = await users
+            .doc(_currentUser!.email)
+            .collection("chats")
+            .get(); //ambil dari colllection chats dengan email yang login
+
+        if (ListChat.docs.length != 0) {
+          List<ChatsUser> dataListChat = []; //buat list untuk menampung data
+          ListChat.docs.forEach((element) {
+            //foreach dipakai untuk mengambil data satu per satu dari list.
+            var dataChat = element
+                .data(); //ambil data dari list yang uda di foreach
+            var dataChatId =
+                element.id; //ambil id dari list yang uda di foreach
+
+            dataListChat.add(
+              //isi List dataListchat dengan data dari dataChat dan dataChatId
+              ChatsUser(
+                chatId: dataChatId,
+                connection: dataChat["connection"],
+                lastTime: dataChat["lastTime"],
+                totalUnread: dataChat["total_unread"],
+              ),
+            );
+          });
+          user.update((val) {
+            //update model user
+            val!.chats = dataListChat;
+          });
+        } else {
+          //jika tidak ada data di colllection chats
+          user.update((val) {
+            val!.chats = []; //user nya tidak ada
+          });
+        }
+
         return true;
       } else {
         return false;
@@ -135,15 +183,69 @@ class AuthCController extends GetxController {
                 .toIso8601String(),
             'updatedAt': DateTime.now().toIso8601String(),
             'KeyName': _currentUser!.displayName!.substring(0, 1).toUpperCase(),
-            'chats': [],
+            'chats': [], // tambahkan ini
           });
+
+          await users
+              .doc(_currentUser!.email)
+              .collection(
+                "chats",
+              ); //ketika dia login dia juga buat colllection chats
         }
 
         final userTerkini = await users.doc(_currentUser!.email).get();
 
         final dataUserTerkini = userTerkini.data() as Map<String, dynamic>;
 
-        user(TestUser.fromJson(dataUserTerkini));
+        user(
+          TestUser(
+            //masukkan data ke model user secara manual
+            uid: dataUserTerkini["uid"],
+            email: dataUserTerkini["email"],
+            name: dataUserTerkini["name"],
+            status: dataUserTerkini["status"],
+            createdAt: dataUserTerkini["createdAt"],
+            updatedAt: dataUserTerkini["updatedAt"],
+            photoUrl: dataUserTerkini["photoUrl"],
+            lastSignIn: dataUserTerkini["lastSignIn"],
+            keyName: dataUserTerkini["KeyName"],
+          ),
+        );
+
+        final ListChat = await users
+            .doc(_currentUser!.email)
+            .collection("chats")
+            .get(); //ambil dari colllection chats dengan email yang login
+
+        if (ListChat.docs.length != 0) {
+          List<ChatsUser> dataListChat = []; //buat list untuk menampung data
+          ListChat.docs.forEach((element) {
+            //foreach dipakai untuk mengambil data satu per satu dari list.
+            var dataChat = element
+                .data(); //ambil data dari list yang uda di foreach
+            var dataChatId =
+                element.id; //ambil id dari list yang uda di foreach
+
+            dataListChat.add(
+              //isi List dataListchat dengan data dari dataChat dan dataChatId
+              ChatsUser(
+                chatId: dataChatId,
+                connection: dataChat["connection"],
+                lastTime: dataChat["lastTime"],
+                totalUnread: dataChat["total_unread"],
+              ),
+            );
+          });
+          user.update((val) {
+            //update model user
+            val!.chats = dataListChat;
+          });
+        } else {
+          //jika tidak ada data di colllection chats
+          user.update((val) {
+            val!.chats = []; //user nya tidak ada
+          });
+        }
 
         final box = GetStorage();
         if (box.read('skip') != null || box.read('skip') == true) {
@@ -232,33 +334,42 @@ class AuthCController extends GetxController {
   void addNewConnection(String friendEmail) async {
     bool flagNewConnection = false;
     final date = DateTime.now().toIso8601String();
+
     CollectionReference chats = firestore.collection("chats");
     CollectionReference users = firestore.collection("users");
 
-    final docUser = await users.doc(_currentUser!.email).get();
-
-    final docChat = (docUser.data() as Map<String, dynamic>)["chats"] as List;
-
     var chat_id;
 
-    if (docChat.isNotEmpty) {
-      for (var element in docChat) {
-        if (element["connection"] == friendEmail) {
-          chat_id = element["chat_id"];
-          break;
-        }
-      }
+    //ambil daftar chat milik user dari subcollection chats
+    final docChats = await users
+        .doc(_currentUser!.email)
+        .collection("chats")
+        .get();
 
-      if (chat_id != null) {
+    if (docChats.docs.isNotEmpty) {
+      //cek apakah sudah pernah chat dengan friendEmail
+      final checkKoneksic = await users
+          .doc(_currentUser!.email)
+          .collection("chats")
+          .where("connection", isEqualTo: friendEmail)
+          .get();
+
+      if (checkKoneksic.docs.isNotEmpty) {
+        //jika sudah ada chat
         flagNewConnection = false;
+        chat_id = checkKoneksic.docs[0].id; //ambil id chat
       } else {
+        //belum pernah chat dengan friendEmail
         flagNewConnection = true;
       }
     } else {
+      //belum punya chat sama sekali
       flagNewConnection = true;
     }
 
+    //jika ini koneksi baru
     if (flagNewConnection) {
+      //cek apakah chat global sudah ada
       final cekKoneksiberdua = await chats
           .where(
             "connection",
@@ -270,27 +381,21 @@ class AuthCController extends GetxController {
           .get();
 
       if (cekKoneksiberdua.docs.isNotEmpty) {
+        //jika chat global sudah ada
         final chatDataId = cekKoneksiberdua.docs.first.id;
-        final chatData = cekKoneksiberdua.docs.first.data() as Map<String, dynamic>;
+        final chatData =
+            cekKoneksiberdua.docs.first.data() as Map<String, dynamic>;
 
-        await users.doc(_currentUser!.email).update({
-          //sekarang add chats bya seperti ini sesuaikan dengan models baru
-          "chats": FieldValue.arrayUnion([
-            {
+        //buat dokumen chat di subcollection user (nested collection)
+        await users
+            .doc(_currentUser!.email)
+            .collection("chats")
+            .doc(chatDataId)
+            .set({
               "connection": friendEmail,
-              "chat_id": chatDataId,
               "lastTime": chatData["lastTime"],
-              "total_unread": 0, //jadi pas klik message dia seakan uda baca
-            },
-          ]),
-        });
-
-        ChatsUser(
-          connection: friendEmail,
-          chatId: chatDataId,
-          lastTime: chatData["lastTime"],
-          totalUnread: 0
-        );
+              "total_unread": 0,
+            });
 
         chat_id = chatDataId;
         user.refresh();
@@ -299,43 +404,33 @@ class AuthCController extends GetxController {
         return;
       }
 
+      //jika chat global belum ada, buat baru
       final newChatDocs = await chats.add({
-        //sekarang add chats bya seperti ini sesuaikan dengan models baru
         "connection": [_currentUser!.email, friendEmail],
         "chat": [],
+        "lastTime": date,
       });
 
-      await users.doc(_currentUser!.email).update({
-        //sekarang add chats bya seperti ini sesuaikan dengan models baru
-        "chats": FieldValue.arrayUnion([
-          {
+      //buat nested collection chats di user
+      await users
+          .doc(_currentUser!.email)
+          .collection("chats")
+          .doc(newChatDocs.id)
+          .set({
             "connection": friendEmail,
-            "chat_id": newChatDocs.id,
             "lastTime": date,
-            "total_unread": 0, //jadi pas klik message dia seakan uda baca
-          },
-        ]),
-      });
-
-      user.update((val) {
-        val!.chats ??= [];
-        val.chats!.add(
-          ChatsUser(
-            connection: friendEmail,
-            chatId: newChatDocs.id,
-            lastTime: date,
-            totalUnread: 0,
-          ),
-        );
-      });
+            "total_unread": 0,
+          });
 
       chat_id = newChatDocs.id;
       user.refresh();
     }
 
-    if (chat_id != null) {
+        if (chat_id != null) {
       print(chat_id);
+
       Get.toNamed(Routes.CHAT, arguments: chat_id);
     }
+
   }
 }

@@ -57,26 +57,26 @@ class HomeView extends GetView<HomeController> {
           ),
           SizedBox(height: 10),
           Expanded(
-            child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              //stream ke subcollection chats milik user
               stream: controller.chatStream(authC.user!.value.email!),
-
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.active) {
-                  var allChats =
-                      (snapshot.data!.data() as Map<String, dynamic>)["chats"]
-                          as List;
-                          //sorting data berdasarkan lastTime
+                  var listDocs = snapshot.data!.docs;
+
+                  if (listDocs.isEmpty) {
+                    return Center(child: Text("Belum ada chat"));
+                  }
 
                   return ListView.builder(
-                    itemCount: allChats.length,
+                    itemCount: listDocs.length,
                     itemBuilder: (context, index) {
+                      var chatData = listDocs[index].data();
+
                       return StreamBuilder<
                         DocumentSnapshot<Map<String, dynamic>>
                       >(
-                        stream: controller.UserStream(
-                          allChats[index]["connection"],
-                        ),
-
+                        stream: controller.UserStream(chatData["connection"]),
                         builder: (context, snapshot2) {
                           if (snapshot2.connectionState ==
                               ConnectionState.active) {
@@ -85,7 +85,11 @@ class HomeView extends GetView<HomeController> {
 
                             return ListTile(
                               onTap: () {
-                                Get.toNamed(Routes.CHAT);
+                                //kirim chatId ke halaman chat
+                                Get.toNamed(
+                                  Routes.CHAT,
+                                  arguments: listDocs[index].id,
+                                );
                               },
                               leading: allUser["photoUrl"] == null
                                   ? CircleAvatar()
@@ -108,12 +112,11 @@ class HomeView extends GetView<HomeController> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              trailing: allChats[index]["total_unread"] == 0
+                              trailing: chatData["total_unread"] == 0
                                   ? null
                                   : Chip(
                                       label: Text(
-                                        allChats[index]["total_unread"]
-                                            .toString(),
+                                        chatData["total_unread"].toString(),
                                       ),
                                     ),
                             );

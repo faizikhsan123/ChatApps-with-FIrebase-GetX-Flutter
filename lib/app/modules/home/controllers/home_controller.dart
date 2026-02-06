@@ -2,17 +2,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
-
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  Stream<DocumentSnapshot<Map<String, dynamic>>> chatStream(String email) { //function stream 
-  
-
-    return firestore.collection("users").doc(email).snapshots(); //ambil dari collection users dengan email yang login
+  //stream daftar chat milik user (subcollection)
+  Stream<QuerySnapshot<Map<String, dynamic>>> chatStream(String email) {
+    return firestore
+        .collection("users") //ambil dari collection users
+        .doc(email) //doc user yg login
+        .collection("chats") //subcollection chats
+        .orderBy("lastTime", descending: true) //urutkan berdasarkan waktu terakhir
+        .snapshots();
   }
 
-  Stream<DocumentSnapshot<Map<String, dynamic>>> UserStream(email) { //stream untuk user
-    return firestore.collection("users").doc(email).snapshots(); //ambil dari collection users dengan email  teman kita
-
+  //stream data user lawan chat
+  Stream<DocumentSnapshot<Map<String, dynamic>>> UserStream(String email) {
+    return firestore
+        .collection("users") //ambil dari collection users
+        .doc(email) //ambil doc berdasarkan email
+        .snapshots();
   }
 }
