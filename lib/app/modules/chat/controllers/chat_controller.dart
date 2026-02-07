@@ -14,6 +14,14 @@ class ChatController extends GetxController {
 
   int total_unread = 0;
 
+  //stream chats
+  Stream<QuerySnapshot<Map<String, dynamic>>> chatStrem(String chatId)  {
+    CollectionReference chats = firestore.collection("chats");
+
+   return chats.doc(chatId).collection("chats").orderBy("time").snapshots(); //ambil data terbaru dari sub collectioin chats 
+
+  }
+
   void addEmojiToChat(Emoji emoji) {
     chatC.text = chatC.text + emoji.emoji;
   }
@@ -89,4 +97,5 @@ class ChatController extends GetxController {
 
     await chats.doc(chatId).update({"lastTime": date});
   }
+
 }

@@ -49,7 +49,7 @@ class HomeController extends GetxController {
       "total_unread": 0,
     });
 
-    Get.toNamed(Routes.CHAT,parameters: { //jika function uda berjalan pindah halaman dan kirim parameter
+    Get.toNamed(Routes.CHAT,parameters: { //jika function uda berjalan pindah halaman dan kirim
       "chatId" : chat_id,
       "FriendEmail" : friendEmail
     } );

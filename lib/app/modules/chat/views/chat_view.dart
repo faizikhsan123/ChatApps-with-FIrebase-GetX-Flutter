@@ -1,4 +1,5 @@
 import 'package:chat_apps/app/controllers/auth_c_controller.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 
@@ -7,7 +8,7 @@ import 'package:get/get.dart';
 import '../controllers/chat_controller.dart';
 
 class ChatView extends GetView<ChatController> {
-  final authC = Get.find<AuthCController>(); //import auth cotnroller
+  final authC = Get.find<AuthCController>();
 
   @override
   Widget build(BuildContext context) {
@@ -48,11 +49,24 @@ class ChatView extends GetView<ChatController> {
               width: Get.width,
               height: Get.height,
               color: const Color.fromARGB(255, 101, 93, 72),
-              child: ListView(
-                children: [
-                  ItemsChat(isSender: true),
-                  ItemsChat(isSender: false),
-                ],
+              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>( //kita stream buat ngambil data
+                stream: controller.chatStrem(Get.parameters["chatId"]!,), //jalankan stream dan ambil chat id dari parameter
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.active) {
+                    var Alldata = snapshot.data!.docs; //ambil semua data dari snapshot
+                    return ListView.builder(
+                      //buat listview
+                      itemCount: Alldata.length, //sebanyak datanya
+                      itemBuilder: (context, index) {
+                        return ItemsChat(
+                          isSender: Alldata[index]["pengirim"] == authC.user.value.email ? true : false, //kalo pengirim sama dengan user yg login, kalo tidak false
+                          pesan: "${Alldata[index]["pesan"]}", //ambil pesannya
+                        );
+                      },
+                    );
+                  }
+                  return Center(child: CircularProgressIndicator());
+                },
               ),
             ),
           ),
@@ -110,7 +124,7 @@ class ChatView extends GetView<ChatController> {
                           controller.chatC.text,
                         );
 
-                        controller.chatC.clear(); //opsional: bersihkan input setelah kirim
+                        controller.chatC.clear();
                       },
                       icon: Icon(Icons.send, color: Colors.white),
                     ),
@@ -160,9 +174,10 @@ class ChatView extends GetView<ChatController> {
 }
 
 class ItemsChat extends StatelessWidget {
-  const ItemsChat({super.key, required this.isSender});
+  const ItemsChat({super.key, required this.isSender, required this.pesan});
 
   final bool isSender;
+  final String pesan; //tambahkakn ini
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +206,7 @@ class ItemsChat extends StatelessWidget {
                       bottomRight: Radius.circular(10),
                     ),
             ),
-            child: Text("lorem ipsum dolor sit amet"),
+            child: Text("$pesan"), //ini juga
           ),
           Text("12/02/2022"),
         ],
