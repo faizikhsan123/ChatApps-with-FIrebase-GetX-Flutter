@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class ChatController extends GetxController {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -11,16 +12,16 @@ class ChatController extends GetxController {
   late FocusNode focusNode;
 
   late TextEditingController chatC;
-  late ScrollController scrollController; //untuk autoscroll pada listview
+  late ScrollController scrollController; 
 
   int total_unread = 0;
 
   Stream<QuerySnapshot<Map<String, dynamic>>> chatStrem(String chatId) {
     CollectionReference chats = firestore.collection("chats");
 
-    return chats.doc(chatId).collection("chats").orderBy("time").snapshots();
+    return chats.doc(chatId).collection("chats").orderBy("time",).snapshots();
   }
-  Stream<DocumentSnapshot<Object?>> FriendStream(String friendEmail){ //stream data teman
+  Stream<DocumentSnapshot<Object?>> FriendStream(String friendEmail){ 
     CollectionReference users = firestore.collection("users");
 
    return users.doc(friendEmail).snapshots();
@@ -37,7 +38,7 @@ class ChatController extends GetxController {
   @override
   void onInit() {
     chatC = TextEditingController();
-    scrollController = ScrollController(); //tambhakn ini
+    scrollController = ScrollController(); 
     focusNode = FocusNode();
     focusNode.addListener(() {
       if (focusNode.hasFocus) {
@@ -49,21 +50,23 @@ class ChatController extends GetxController {
   }
 
   @override
+
   void dispose() {
     focusNode.dispose();
-    scrollController.dispose(); //tambhakn ini
+    scrollController.dispose(); 
     chatC.dispose();
     super.dispose();
   }
 
  void newChat(String email,String chatId,String friendEmail,String chat,) async {
-  String message = chat.trim(); //trim untuk menghilangkan spasi di awal dan akhir string : "   hello   " => "hello"
-  if (message.isEmpty) return; //jika message kosong maka  tidak dijalankan
+  String message = chat.trim(); 
+  if (message.isEmpty) return; 
 
   CollectionReference chats = firestore.collection("chats");
   CollectionReference users = firestore.collection("users");
 
-  String date = DateTime.now().toIso8601String();
+String date = DateTime.now().toIso8601String(); //ambil waktu sekarang memakai format tertentu
+
 
  await chats.doc(chatId).collection("chats").add({
     "pengirim": email,
@@ -71,12 +74,15 @@ class ChatController extends GetxController {
     "pesan": message,
     "time": date,
     "isRead": false,
+    "GroupTime": DateFormat.yMMMMd().format(DateTime.parse(date)),
+   //pas chat babru tambahkan grouptime yang isinya
+    //format tanggal dari date bentuk string ke bentuk DateTime (ketentuan package intl) lalu hnya ambil hari tanggal tahun
   });
 
-  chatC.clear(); //clear textfield
+  chatC.clear(); 
 
     scrollController.animateTo(
-      scrollController.position.maxScrollExtent, //kebawah
+      scrollController.position.maxScrollExtent, 
       duration: Duration(milliseconds: 300),
       curve: Curves.easeOut,
     );

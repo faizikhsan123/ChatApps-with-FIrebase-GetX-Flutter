@@ -4,6 +4,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import '../controllers/chat_controller.dart';
 
@@ -29,19 +30,14 @@ class ChatView extends GetView<ChatController> {
               SizedBox(width: 5),
               CircleAvatar(
                 child: StreamBuilder<DocumentSnapshot<Object?>>(
-                  //ngambil data teman
                   stream: controller.FriendStream(
                     Get.parameters["FriendEmail"]!,
-
-                    ///ambil parameter Emailteman
                   ),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.active) {
                       var dataFriend =
-                          snapshot.data!.data()
-                              as Map<String, dynamic>; //ambil hasil snapshot
+                          snapshot.data!.data() as Map<String, dynamic>;
                       if (dataFriend["photoUrl"] == null) {
-                        //jika photoUrl null
                         return CircleAvatar(
                           child: Icon(Icons.person, size: 35),
                           radius: 25,
@@ -54,7 +50,6 @@ class ChatView extends GetView<ChatController> {
                         );
                       }
                       return CircleAvatar(
-                        //jika photoUrl ada
                         backgroundImage: NetworkImage(dataFriend["photoUrl"]),
                         radius: 25,
                         backgroundColor: const Color.fromARGB(
@@ -75,7 +70,6 @@ class ChatView extends GetView<ChatController> {
           ),
         ),
         title: StreamBuilder<DocumentSnapshot<Object?>>(
-          //lakukan hal yang sama seperti sebelumnya
           stream: controller.FriendStream(Get.parameters["FriendEmail"]!),
           builder: (context, asyncSnapshot) {
             if (asyncSnapshot.connectionState == ConnectionState.active) {
@@ -113,7 +107,6 @@ class ChatView extends GetView<ChatController> {
                   if (snapshot.connectionState == ConnectionState.active) {
                     var Alldata = snapshot.data!.docs;
 
-                    //auto scroll saat data sudah tampil
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (controller.scrollController.hasClients) {
                         controller.scrollController.animateTo(
@@ -125,20 +118,55 @@ class ChatView extends GetView<ChatController> {
                     });
 
                     return ListView.builder(
-                      controller: controller
-                          .scrollController, //listview punya controller utnuk auto scroll
+                      controller: controller.scrollController,
                       itemCount: Alldata.length,
+                
                       itemBuilder: (context, index) {
-                        return ItemsChat(
-                          isSender:
-                              Alldata[index]["pengirim"] ==
-                                  authC.user.value.email
-                              ? true
-                              : false,
-                          pesan: "${Alldata[index]["pesan"]}",
-                          time: Alldata[index]["time"],
-                        );
-                      },
+                        if (index == 0) { //jika data pertamaa
+                          return Column(
+                            children: [
+                              Text(Alldata[index]["GroupTime"]),
+                              ItemsChat(
+                                isSender:
+                                    Alldata[index]["pengirim"] ==
+                                        authC.user.value.email
+                                    ? true
+                                    : false,
+                                pesan: "${Alldata[index]["pesan"]}",
+                                time: Alldata[index]["time"],
+                              ),
+                            ],
+                          );
+                        }else { //jika index selain pertama group timenya sama dengan index sebelumnya maka 
+                          if (Alldata[index]["GroupTime"] == Alldata[index -1]["GroupTime"]) { //tanggal pesan sekarang == tanggal pesan sebelumnya
+                            return ItemsChat(
+                              isSender:
+                                  Alldata[index]["pengirim"] ==
+                                      authC.user.value.email
+                                  ? true
+                                  : false,
+                              pesan: "${Alldata[index]["pesan"]}",
+                              time: Alldata[index]["time"],
+                            );
+                            
+                          }else {
+                            return Column(
+                              children: [
+                                Text(Alldata[index]["GroupTime"]),
+                                ItemsChat(
+                                  isSender:
+                                      Alldata[index]["pengirim"] ==
+                                          authC.user.value.email
+                                      ? true
+                                      : false,
+                                  pesan: "${Alldata[index]["pesan"]}",
+                                  time: Alldata[index]["time"],
+                                ),
+                              ],
+                            );
+                          }
+                        }
+                      } 
                     );
                   }
                   return Center(child: CircularProgressIndicator());
@@ -257,7 +285,7 @@ class ItemsChat extends StatelessWidget {
 
   final bool isSender;
   final String pesan;
-  final String time; //tambahkan ini
+  final String time;
 
   @override
   Widget build(BuildContext context) {
@@ -288,7 +316,9 @@ class ItemsChat extends StatelessWidget {
             ),
             child: Text("$pesan"),
           ),
-          Text("${DateTime.parse(time)}"), //menampilkan waktu
+          Text(
+            DateFormat.jm().format(DateTime.parse(time)),
+          ), //ambil waktunya pake packagge intl time nya yg awalnya dari string harus diubah ke bentuk DateTime lagi karena ketentuan DateFormat jm itu jam dan menit
         ],
       ),
       alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
