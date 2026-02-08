@@ -11,15 +11,19 @@ class ChatController extends GetxController {
   late FocusNode focusNode;
 
   late TextEditingController chatC;
+  late ScrollController scrollController; //untuk autoscroll pada listview
 
   int total_unread = 0;
 
-  //stream chats
-  Stream<QuerySnapshot<Map<String, dynamic>>> chatStrem(String chatId)  {
+  Stream<QuerySnapshot<Map<String, dynamic>>> chatStrem(String chatId) {
     CollectionReference chats = firestore.collection("chats");
 
-   return chats.doc(chatId).collection("chats").orderBy("time").snapshots(); //ambil data terbaru dari sub collectioin chats 
+    return chats.doc(chatId).collection("chats").orderBy("time").snapshots();
+  }
+  Stream<DocumentSnapshot<Object?>> FriendStream(String friendEmail){ //stream data teman
+    CollectionReference users = firestore.collection("users");
 
+   return users.doc(friendEmail).snapshots();
   }
 
   void addEmojiToChat(Emoji emoji) {
@@ -33,7 +37,7 @@ class ChatController extends GetxController {
   @override
   void onInit() {
     chatC = TextEditingController();
-
+    scrollController = ScrollController(); //tambhakn ini
     focusNode = FocusNode();
     focusNode.addListener(() {
       if (focusNode.hasFocus) {
@@ -47,28 +51,36 @@ class ChatController extends GetxController {
   @override
   void dispose() {
     focusNode.dispose();
+    scrollController.dispose(); //tambhakn ini
     chatC.dispose();
     super.dispose();
   }
 
-  void newChat(
-    String email,
-    String chatId,
-    String friendEmail,
-    String chat,
-  ) async {
-    CollectionReference chats = firestore.collection("chats");
-    CollectionReference users = firestore.collection("users");
+ void newChat(String email,String chatId,String friendEmail,String chat,) async {
+  String message = chat.trim(); //trim untuk menghilangkan spasi di awal dan akhir string : "   hello   " => "hello"
+  if (message.isEmpty) return; //jika message kosong maka  tidak dijalankan
 
-    String date = DateTime.now().toIso8601String();
+  CollectionReference chats = firestore.collection("chats");
+  CollectionReference users = firestore.collection("users");
 
-    final newChat = await chats.doc(chatId).collection("chats").add({
-      "pengirim": email,
-      "penerima": friendEmail,
-      "pesan": chat,
-      "time": date,
-      "isRead": false,
-    });
+  String date = DateTime.now().toIso8601String();
+
+ await chats.doc(chatId).collection("chats").add({
+    "pengirim": email,
+    "penerima": friendEmail,
+    "pesan": message,
+    "time": date,
+    "isRead": false,
+  });
+
+  chatC.clear(); //clear textfield
+
+    scrollController.animateTo(
+      scrollController.position.maxScrollExtent, //kebawah
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+
 
     await users.doc(email).collection("chats").doc(chatId).update({
       "lastTime": date,
@@ -97,5 +109,6 @@ class ChatController extends GetxController {
 
     await chats.doc(chatId).update({"lastTime": date});
   }
-
 }
+
+  

@@ -27,19 +27,77 @@ class ChatView extends GetView<ChatController> {
               SizedBox(width: 5),
               Icon(Icons.arrow_back_ios),
               SizedBox(width: 5),
-              CircleAvatar(radius: 25, backgroundColor: Colors.black38),
+              CircleAvatar(
+                child: StreamBuilder<DocumentSnapshot<Object?>>(
+                  //ngambil data teman
+                  stream: controller.FriendStream(
+                    Get.parameters["FriendEmail"]!,
+
+                    ///ambil parameter Emailteman
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.active) {
+                      var dataFriend =
+                          snapshot.data!.data()
+                              as Map<String, dynamic>; //ambil hasil snapshot
+                      if (dataFriend["photoUrl"] == null) {
+                        //jika photoUrl null
+                        return CircleAvatar(
+                          child: Icon(Icons.person, size: 35),
+                          radius: 25,
+                          backgroundColor: const Color.fromARGB(
+                            96,
+                            243,
+                            243,
+                            243,
+                          ),
+                        );
+                      }
+                      return CircleAvatar(
+                        //jika photoUrl ada
+                        backgroundImage: NetworkImage(dataFriend["photoUrl"]),
+                        radius: 25,
+                        backgroundColor: const Color.fromARGB(
+                          96,
+                          243,
+                          243,
+                          243,
+                        ),
+                      );
+                    }
+                    return CircularProgressIndicator();
+                  },
+                ),
+                radius: 25,
+                backgroundColor: Colors.black38,
+              ),
             ],
           ),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Lorem Ipsum",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text("Statusnnya lorem", style: TextStyle(fontSize: 14)),
-          ],
+        title: StreamBuilder<DocumentSnapshot<Object?>>(
+          //lakukan hal yang sama seperti sebelumnya
+          stream: controller.FriendStream(Get.parameters["FriendEmail"]!),
+          builder: (context, asyncSnapshot) {
+            if (asyncSnapshot.connectionState == ConnectionState.active) {
+              var dataFriend =
+                  asyncSnapshot.data!.data() as Map<String, dynamic>;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    dataFriend["name"]! ?? "Loading...",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    dataFriend["status"]! ?? "Loading...",
+                    style: TextStyle(fontSize: 14),
+                  ),
+                ],
+              );
+            } else {
+              return CircularProgressIndicator();
+            }
+          },
         ),
       ),
       body: Column(
@@ -49,18 +107,36 @@ class ChatView extends GetView<ChatController> {
               width: Get.width,
               height: Get.height,
               color: const Color.fromARGB(255, 101, 93, 72),
-              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>( //kita stream buat ngambil data
-                stream: controller.chatStrem(Get.parameters["chatId"]!,), //jalankan stream dan ambil chat id dari parameter
+              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: controller.chatStrem(Get.parameters["chatId"]!),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.active) {
-                    var Alldata = snapshot.data!.docs; //ambil semua data dari snapshot
+                    var Alldata = snapshot.data!.docs;
+
+                    //auto scroll saat data sudah tampil
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (controller.scrollController.hasClients) {
+                        controller.scrollController.animateTo(
+                          controller.scrollController.position.maxScrollExtent,
+                          duration: Duration(milliseconds: 300),
+                          curve: Curves.easeOut,
+                        );
+                      }
+                    });
+
                     return ListView.builder(
-                      //buat listview
-                      itemCount: Alldata.length, //sebanyak datanya
+                      controller: controller
+                          .scrollController, //listview punya controller utnuk auto scroll
+                      itemCount: Alldata.length,
                       itemBuilder: (context, index) {
                         return ItemsChat(
-                          isSender: Alldata[index]["pengirim"] == authC.user.value.email ? true : false, //kalo pengirim sama dengan user yg login, kalo tidak false
-                          pesan: "${Alldata[index]["pesan"]}", //ambil pesannya
+                          isSender:
+                              Alldata[index]["pengirim"] ==
+                                  authC.user.value.email
+                              ? true
+                              : false,
+                          pesan: "${Alldata[index]["pesan"]}",
+                          time: Alldata[index]["time"],
                         );
                       },
                     );
@@ -123,8 +199,6 @@ class ChatView extends GetView<ChatController> {
                           Get.parameters["FriendEmail"]!,
                           controller.chatC.text,
                         );
-
-                        controller.chatC.clear();
                       },
                       icon: Icon(Icons.send, color: Colors.white),
                     ),
@@ -174,10 +248,16 @@ class ChatView extends GetView<ChatController> {
 }
 
 class ItemsChat extends StatelessWidget {
-  const ItemsChat({super.key, required this.isSender, required this.pesan});
+  const ItemsChat({
+    super.key,
+    required this.isSender,
+    required this.pesan,
+    required this.time,
+  });
 
   final bool isSender;
-  final String pesan; //tambahkakn ini
+  final String pesan;
+  final String time; //tambahkan ini
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +271,7 @@ class ItemsChat extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(15),
             decoration: BoxDecoration(
-              color: Colors.amber,
+              color: const Color.fromARGB(255, 171, 163, 138),
               borderRadius: isSender
                   ? BorderRadius.only(
                       topLeft: Radius.circular(10),
@@ -206,9 +286,9 @@ class ItemsChat extends StatelessWidget {
                       bottomRight: Radius.circular(10),
                     ),
             ),
-            child: Text("$pesan"), //ini juga
+            child: Text("$pesan"),
           ),
-          Text("12/02/2022"),
+          Text("${DateTime.parse(time)}"), //menampilkan waktu
         ],
       ),
       alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
