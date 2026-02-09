@@ -1,23 +1,17 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ProfileController extends GetxController {
-  //TODO: Implement ProfileController
+ var isDark = Get.isDarkMode.obs;
 
-  final count = 0.obs;
-  @override
-  void onInit() {
-    super.onInit();
+void changeTheme() {
+  if (isDark.value) {
+    Get.changeTheme(ThemeData.light());
+    isDark.value = false;
+  } else {
+    Get.changeTheme(ThemeData.dark());
+    isDark.value = true;
   }
+}
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
-  }
-
-  void increment() => count.value++;
 }

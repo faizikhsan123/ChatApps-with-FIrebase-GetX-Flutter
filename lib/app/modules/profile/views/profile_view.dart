@@ -45,15 +45,12 @@ class ProfileView extends GetView<ProfileController> {
                       margin: EdgeInsets.all(15),
                       width: 200,
                       height: 200,
-                      child:
-                          authC.user?.value.photoUrl ==
-                              null //jika image null tampilkan gambar default
+                      child: authC.user?.value.photoUrl == null
                           ? Image.asset(
                               "assets/logo/profile.png",
                               fit: BoxFit.cover,
                             )
                           : Image.network(
-                              //jika tidak null tampilkan gambar dari firebase
                               "${authC.user?.value.photoUrl}",
                               fit: BoxFit.cover,
                             ),
@@ -75,14 +72,11 @@ class ProfileView extends GetView<ProfileController> {
 
             Obx(
               () => Text(
-                "${authC.user?.value.name}", //ngambil data dari model karena modelnya uda obx kita harus tambah .value
+                "${authC.user?.value.name}",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
-            Text(
-              "${authC.user?.value.email}",
-              style: TextStyle(fontSize: 15),
-            ), //kenapa email tidak di obx karena emailnya tidak bisa di update
+            Text("${authC.user?.value.email}", style: TextStyle(fontSize: 15)),
 
             SizedBox(height: 30),
 
@@ -113,11 +107,20 @@ class ProfileView extends GetView<ProfileController> {
                     ),
                     trailing: Icon(Icons.arrow_forward, size: 30),
                   ),
-                  ListTile(
-                    onTap: () {},
-                    leading: Icon(Icons.theater_comedy, size: 28),
-                    title: Text("Change Theme", style: TextStyle(fontSize: 18)),
-                    trailing: Text("Light", style: TextStyle(fontSize: 18)),
+                  Obx(
+                    () => ListTile(
+                      onTap: () {
+                        controller.changeTheme();
+                      },
+                      leading: Icon(Icons.theater_comedy, size: 28),
+                      title: Text(
+                        "Change Theme",
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      trailing: controller.isDark.value //icon menyesuaikan tema
+                          ? Icon(Icons.dark_mode)
+                          : Icon(Icons.light_mode),
+                    ),
                   ),
                 ],
               ),
