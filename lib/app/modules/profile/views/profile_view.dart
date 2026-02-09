@@ -40,29 +40,31 @@ class ProfileView extends GetView<ProfileController> {
                   startDelay: Duration(milliseconds: 1000),
                   glowColor: const Color.fromARGB(255, 167, 162, 146),
                   glowShape: BoxShape.circle,
-                  child: Container(
-                    margin: EdgeInsets.all(15),
-                    width: 200,
-                    height: 200,
-                    child:
-                        authC.user?.value.photoUrl ==
-                            null //jika image null tampilkan gambar default
-                        ? Image.asset(
-                            "assets/logo/profile.png",
-                            fit: BoxFit.cover,
-                          )
-                        : Image.network(
-                            //jika tidak null tampilkan gambar dari firebase
-                            "${authC.user?.value.photoUrl}",
-                            fit: BoxFit.cover,
-                          ),
-                    decoration: BoxDecoration(
-                      color: Colors.black38,
-                      borderRadius: BorderRadius.circular(100),
+                  child: Obx(
+                    () => Container(
+                      margin: EdgeInsets.all(15),
+                      width: 200,
+                      height: 200,
+                      child:
+                          authC.user?.value.photoUrl ==
+                              null //jika image null tampilkan gambar default
+                          ? Image.asset(
+                              "assets/logo/profile.png",
+                              fit: BoxFit.cover,
+                            )
+                          : Image.network(
+                              //jika tidak null tampilkan gambar dari firebase
+                              "${authC.user?.value.photoUrl}",
+                              fit: BoxFit.cover,
+                            ),
+                      decoration: BoxDecoration(
+                        color: Colors.black38,
+                        borderRadius: BorderRadius.circular(100),
 
-                      image: DecorationImage(
-                        image: AssetImage("assets/logo/profile.png"),
-                        fit: BoxFit.cover,
+                        image: DecorationImage(
+                          image: AssetImage("assets/logo/profile.png"),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),
@@ -77,7 +79,10 @@ class ProfileView extends GetView<ProfileController> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
-            Text("${authC.user?.value.email}", style: TextStyle(fontSize: 15)), //kenapa email tidak di obx karena emailnya tidak bisa di update
+            Text(
+              "${authC.user?.value.email}",
+              style: TextStyle(fontSize: 15),
+            ), //kenapa email tidak di obx karena emailnya tidak bisa di update
 
             SizedBox(height: 30),
 

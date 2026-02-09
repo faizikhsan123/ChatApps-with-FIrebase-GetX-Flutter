@@ -13,9 +13,9 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
   @override
   Widget build(BuildContext context) {
     //jadi controller ini isinya data user yang sedang login
-    controller.emailC.text = authC.user!.value.email!;
-    controller.nameC.text = authC.user!.value.name!;
-    controller.statusC.text = authC.user!.value.status!;
+    controller.emailC.text = authC.user.value.email!;
+    controller.nameC.text = authC.user.value.name!;
+    controller.statusC.text = authC.user.value.status!;
 
     return Scaffold(
       appBar: AppBar(
@@ -57,9 +57,14 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
                     child: Material(
                       elevation: 8,
                       shape: CircleBorder(),
-                      child: CircleAvatar(
-                        backgroundImage: NetworkImage(
-                          "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YXZhdGFyfGVufDB8fDB8fA%3D%3D&w=1000&q=80",
+                      child: Obx(
+                        () => CircleAvatar(
+                          radius: 60,
+                          backgroundImage: authC.user.value.photoUrl == null //jika photoUrl null
+                              ? NetworkImage(
+                                  "https://i.ibb.co/2kR8Y7b/default-avatar.png",
+                                )
+                              : NetworkImage(authC.user.value.photoUrl!), //jika photoUrl tidak null
                         ),
                       ),
                     ),
@@ -156,7 +161,6 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
                                       ),
                                     ),
                                     Positioned(
-                                      //widget position untuk atur poisi dari parent seccara manual
                                       top: 0,
                                       right: 0,
                                       child: Container(
@@ -177,7 +181,7 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
                                         ),
                                       ),
                                     ),
-                                    // tombol upload dipindah ke bawah biar tidak nutup gambar
+
                                     Positioned(
                                       bottom: 0,
                                       left: 0,
@@ -186,7 +190,12 @@ class ChangeProfileView extends GetView<ChangeProfileController> {
                                         color: Colors.black45,
                                         height: 30,
                                         child: TextButton(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            controller.uploadImageToCloudinary(
+                                              authC.user.value.email!,
+                                            ); //fungsi upload ke cloudinary
+                                          },
+
                                           child: FittedBox(
                                             child: Text(
                                               "upload Image",

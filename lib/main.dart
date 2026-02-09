@@ -12,7 +12,8 @@ import 'app/routes/app_pages.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await GetStorage.init(); //import get_storage
+  await GetStorage.init();
+  // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]); // untuk menghindari orientasi landscape (agar selalu portrait)
   await Firebase.initializeApp();
 
   final authC = Get.put(AuthCController(), permanent: true);
@@ -42,8 +43,10 @@ void main() async {
                   ),
                 );
               }
-              return FutureBuilder(future: authC.firstinitializeApp(), //jadi function firstinitializeApp akan selalu dijalankan setelah 3 detik (splashscreen)
-              builder: (context, snapshot) => Splashscreen(),);
+              return FutureBuilder(
+                future: authC.firstinitializeApp(),
+                builder: (context, snapshot) => Splashscreen(),
+              );
             },
           );
         }
